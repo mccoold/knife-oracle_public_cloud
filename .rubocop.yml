@@ -1,0 +1,19 @@
+Metrics/LineLength:
+  Max: 135
+
+Metrics/MethodLength:
+  CountComments: false  # count full line comments?
+  Max: 25
+Style/HashSyntax:
+  Description: >-
+                 Prefer Ruby 1.9 hash syntax { a: 1, b: 2 } over 1.8 syntax
+                 { :a => 1, :b => 2 }.
+  StyleGuide: 'https://github.com/bbatsov/ruby-style-guide#hash-literals'
+  Enabled: false
+ 
+Style/AlignParameters:
+  Description: >-
+                 Align the parameters of a method call if they span more
+                 than one line.
+  StyleGuide: 'https://github.com/bbatsov/ruby-style-guide#no-double-indent'
+  Enabled: false
