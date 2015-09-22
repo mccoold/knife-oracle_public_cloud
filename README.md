@@ -1,6 +1,8 @@
 # README #
 
-### Knife Plugin for Oracle Public Cloud (OPC) ###
+
+### Knife Plugin for Oracle Public Cloud PaaS (OPC) ###
+
 
 ** Summary: **
 This is an open source tool and repo for the knife-opc plugin used to integrate Chef (knife) with Oracle Public Cloud (OPC).  
@@ -12,9 +14,11 @@ Has list feature for storage, DB, and Java as well
 
 ### How do I get set up? ###
 
-* Summary of set up
+* Setup:
+This GEM and the OPC gem will need to be installed into the instance of ruby that 
+comes embedded with Chef and is used by knife
 
-* Configuration
+
 
  **Dependencies**
 
@@ -23,13 +27,11 @@ Has list feature for storage, DB, and Java as well
 
 ### Usage ###
 
+
 	* The following flags are required with all commands 
 		* -u --user_name  The user name for the Oracle cloud account
 		* --id_domain  The id domain for the Oracle Cloud account
 		* -p --passwd The password for the Oracle cloud account
-		
-		
-		
 
 
 
