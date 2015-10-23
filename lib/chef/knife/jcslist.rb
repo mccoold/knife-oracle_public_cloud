@@ -25,7 +25,7 @@ class Chef
         require 'chef/json_compat'
         require 'OPC'
       end # end of deps
-      banner 'knife OPC jcs list (options)'
+      banner 'knife opc jcs list (options)'
 
       def run
         attrcheck = nil
@@ -33,8 +33,8 @@ class Chef
         if valid.at(0) == 'true'
           puts valid.at(1)
         else
-          result = SrvList.new
-          result = result.service_list("#{config[:id_domain]}", "#{config[:user_name]}", "#{config[:passwd]}")
+          result = SrvList.new(config[:id_domain], config[:user_name], config[:passwd])
+          result = result.service_list('jcs')
           if result.code == '401' || result.code == '400' || result.code == '404'
             print ui.color('error, JSON was not returned  the http response code was', :red)
             puts result.code

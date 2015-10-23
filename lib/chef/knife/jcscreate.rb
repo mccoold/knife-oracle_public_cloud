@@ -25,7 +25,7 @@ class Chef
         Chef::Knife::Bootstrap.load_deps
       end # end of deps
 
-      banner 'knife OPC jcs create (options)'
+      banner 'knife opc jcs create (options)'
 
       option :create_json,
          :short       => '-j',
@@ -53,23 +53,21 @@ class Chef
         else
           file = File.read("#{config[:create_json]}")
           data_hash = JSON.parse(file)
-          jcscreate = InstCreate.new
-          createcall = jcscreate.create(data_hash, "#{config[:id_domain]}", "#{config[:user_name]}", "#{config[:passwd]}")
+          jcscreate = InstCreate.new(config[:id_domain], config[:user_name], config[:passwd])
+          createcall = jcscreate.create(data_hash, 'jcs')
           if createcall.code == '401' || createcall.code == '404'
             print ui.color('Error', :red, :bold)
             print ui.color(createcall.body, :red)
           else
-            res = JSON.parse(jcscreate.create_status(createcall['location'], "#{config[:id_domain]}", "#{config[:user_name]}",
-                                                     "#{config[:passwd]}"))
-            print ui.color('Provisioning the JaaS Cloud Asset ' + res['service_name'], :green)
+            res = JSON.parse(jcscreate.create_status(createcall['location']))
+            print ui.color('Provisioning the JCS Cloud Asset ' + res['service_name'], :green)
             while res['status'] == 'In Progress'
               print ui.color('.', :green)
               sleep 90
-              res = JSON.parse(jcscreate.create_status(createcall['location'], "#{config[:id_domain]}",
-                                                       "#{config[:user_name]}", "#{config[:passwd]}"))
+              res = JSON.parse(jcscreate.create_status(createcall['location']))
             end # end of while
-            result = SrvList.new
-            result = result.inst_list("#{config[:id_domain]}", "#{config[:user_name]}", "#{config[:passwd]}", "#{res['service_name']}")
+            result = SrvList.new(config[:id_domain], config[:user_name], config[:passwd])
+            result = result.inst_list('jcs', res['service_name'])
             result = JSON.parse(result.body)
             ssh_host = result['content_url']
             ssh_host.delete! 'http://'

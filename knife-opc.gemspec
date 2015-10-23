@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'knife-oracle_public_cloud'
-  s.version = '0.0.2'
+  s.version = '0.0.3'
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ['Daryn McCool']
   s.date = Date.today.to_s
@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   s.summary = %q{OPC_Knife!}
   s.required_ruby_version = '>= 1.8'
   s.license = 'Apache-2.0'
-  s.add_dependency('OPC', '~> 0.0.2')
+  s.add_dependency('OPC', '~> 0.2.1')
   if s.respond_to? :specification_version then
     s.specification_version = 3
   end

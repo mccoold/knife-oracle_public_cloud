@@ -16,25 +16,26 @@
 require 'chef/knife/opc_base'
 class Chef
   class Knife
-    class OpcStorageList < Chef::Knife
+    class OpcObjectstorageList < Chef::Knife
       include Knife::OpcBase
       deps do
         require 'chef/json_compat'
         require 'OPC'
       end # end of deps
-      banner 'knife OPC storage list (options)'
+      banner 'knife opc objectstorage list (options)'
       option :container,
          :long        => '--container CONTAINER',
          :description => 'storage container name'
 
       def run
-        newcontainer = Storage.new
-        newcontainer = newcontainer.list("#{config[:id_domain]}", "#{config[:user_name]}", "#{config[:passwd]}")
-        if newcontainer.code == '201'
-          puts newcontainer.code
-          puts "Container #{options[:container]} created"
+        newcontainer = ObjectStorage.new(config[:id_domain], config[:user_name], config[:passwd])
+        newcontainer = newcontainer.list
+        if newcontainer.code == '200'
+          print ui.color(newcontainer.body, :green)
+          puts ''
         else
-          puts newcontainer.body
+          puts newcontainer.code
+          puts 'in else'
         end # end of if
       end # end of run
     end # end of create

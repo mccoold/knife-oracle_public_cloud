@@ -24,7 +24,7 @@ class Chef
   class Knife
     class OpcJcsDelete < Knife
       include Knife::OpcBase
-      banner 'knife OPC jcs delete (options)'
+      banner 'knife opc jcs delete (options)'
 
       option :purge,
         :long        => '--purge',
@@ -79,9 +79,8 @@ class Chef
         confirm('Do you really want to delete this server')
         data_hash = { 'dbaName' => config[:dbaname], 'dbaPassword' => config[:dbapass], 'forceDelete' => config[:forcedelete] }
         data_hash.to_json
-        deleteinst = InstDelete.new
-        deleteinst = deleteinst.delete(data_hash, "#{config[:id_domain]}", "#{config[:user_name]}",
-                                       "#{config[:passwd]}", "#{config[:inst]}")
+        deleteinst = InstDelete.new(config[:id_domain], config[:user_name], config[:passwd])
+        deleteinst = deleteinst.delete('jcs', data_hash, config[:inst])
         deleteinst = JSON.parse(deleteinst)
         deleteinst = JSON.pretty_generate(deleteinst)
         print ui.color(deleteinst, :yellow)

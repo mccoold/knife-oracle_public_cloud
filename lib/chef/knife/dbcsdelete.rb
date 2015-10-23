@@ -23,7 +23,7 @@ class Chef
   class Knife
     class OpcDbcsDelete < Knife
       include Knife::OpcBase
-      banner 'knife OPC dbcs delete (options)'
+      banner 'knife opc dbcs delete (options)'
 
       option :purge,
         :long        => '--purge',
@@ -60,9 +60,8 @@ class Chef
 
       def run
         confirm('Do you really want to delete this DB server')
-        deleteinst = DbDelete.new
-        deleteinst = deleteinst.delete("#{config[:id_domain]}", "#{config[:user_name]}",
-                                       "#{config[:passwd]}", "#{config[:inst]}")
+        deleteinst = InstDelete.new(config[:id_domain], config[:user_name], config[:passwd])
+        deleteinst = deleteinst.delete('dbcs', nil, config[:inst])
         deleteinst = JSON.parse(deleteinst)
         deleteinst = JSON.pretty_generate(deleteinst)
         print ui.color(deleteinst, :yellow)
