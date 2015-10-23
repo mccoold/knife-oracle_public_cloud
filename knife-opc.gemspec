@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.description = %q{knife plug-in for Oracle Public Cloud}
   s.email = 'mdaryn@hotmail.com'
   s.files += Dir['lib/**/*.rb']
-  s.homepage = 'http://rubygems.org/gems/knife-oracle_public_cloud'
+  s.homepage = 'https://github.com/mccoold/knife-oracle_public_cloud'
   s.require_paths = ['lib']
   s.rubygems_version = %q{1.6.2}
   s.summary = %q{OPC_Knife!}
