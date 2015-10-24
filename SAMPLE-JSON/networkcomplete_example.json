@@ -1,0 +1,138 @@
+{
+	"SecApp" : 
+  	{
+  		"1" :
+  		{
+		    "Action" : "create", 
+		    "Parameters" : 
+	    	{
+	      		"protocol" : "udp",
+	    		"name" : "/<ID_Domain>/<userName>/Testapp",
+	    		"uri" : null,
+	    		"icmptype" : "",
+	    		"dport" : "8898",
+	    		"icmpcode" : ""
+	  		}
+	  	}
+  	},
+
+	"SecRule" :
+	{
+		"1" :
+		{
+			"Action" : "create", 
+		    "Parameters" : 
+			{
+				"dst_list" : "seclist:/<ID_Domain>/<userName>/jaas/JCSDemo/wls/ora_admin",
+				"name": "/<ID_Domain>/<userName>/Test_Rule2",
+				"src_list" : "seciplist:/oracle/public/public-internet",
+				"uri" : null,
+				"disabled" : null,
+				"application" : "/<ID_Domain>/<userName>/Testapp",
+				"action" : "PERMIT"
+		  }
+		}
+	},
+
+	"SecList" :
+	{
+		"1": 
+		{
+			"Action" : "create", 
+	    	"Parameters" :
+			{
+			  "account": "/<ID_Domain>/default",
+		      "description": "test",
+		      "uri": null,
+		      "outbound_cidr_policy": "PERMIT",
+		      "policy": "DENY",
+		      "group_id": "44506",
+		      "id": "1f7396ce-927c-481d-a472-132a09753181",
+		      "name": "/<ID_Domain>/<userName>/seclisttest1"
+		    }
+		},
+		"2" :
+		{
+			"Action" : "create", 
+		    "Parameters" :
+			{
+			  "account": "/<ID_Domain>/default",
+		      "description": "test",
+		      "uri": null,
+		      "outbound_cidr_policy": "PERMIT",
+		      "policy": "DENY",
+		      "group_id": "44506",
+		      "id": "1f7396ce-927c-481d-a472-132a09753181",
+		      "name": "/<ID_Domain>/<userName>/seclisttest2"
+		    }
+		}
+	},
+	"SecIPList" :
+	{
+		"1" :
+		{
+			"Action" : "create", 
+		    "Parameters" :
+			{
+			  "account": "/<ID_Domain>/default",
+		      "description": "test",
+		      "uri": null,
+		      "seclist" : "/<ID_Domain>/<userName>/seclisttest1",
+		      "secipentries": "127.0.0.1/32",
+		      "ListOfIPv4SubnetField" : "",
+		      "name": "/<ID_Domain>/<userName>/testSECIP"
+		    }
+		}
+
+	},
+	"SecAssoc" :
+	{
+		"1" :
+		{
+			"Action" : "create", 
+		    "Parameters" :
+			{
+			  "account": "/<ID_Domain>/default",
+		      "description": "test",
+		      "uri": null,
+		      "seclist": "/<ID_Domain>/<userName>/seclisttest1",
+		      "vcable": "44506",
+		      "name": "/<ID_Domain>/<userName>/testsecassoc"
+		    }
+		}
+
+	},
+	"IP" :
+	{
+		"1" :
+		{
+			"Class" : "association",
+			"Action" : "create", 
+		    "Parameters" :
+			{
+			  "account": null,
+			  "name" :  "/<ID_Domain>/<userName>/associationtest",
+		      "description": "test",
+		      "uri": null,
+		      "parentpool" : "ipreservation:/<ID_Domain>/<userName>/dbaas/devopsdemo36/db/vm-1/ipreservation",
+		      "vcable" : "/<ID_Domain>/<userName>/"
+		    }
+		  },
+	  	"2" :
+	    {
+		    "Class" : "reservation",
+			"Action" : "create", 
+		    "Parameters" :
+			{
+			  "account": null,
+		      "description": "test",
+		      "uri": null,
+		      "name": "/<ID_Domain>/<userName>/reservationtest",
+		      "parentpool" : "ipreservation:/<ID_Domain>/<userName>/dbaas/devopsdemo36/db/vm-1/ipreservation",
+		      "permanent" : true
+		    }
+		}
+
+	}
+	
+}

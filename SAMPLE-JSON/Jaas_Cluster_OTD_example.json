@@ -1,0 +1,49 @@
+{
+"serviceName" : "OTD-Cluster",                                          
+"level":"BASIC",
+"subscriptionType":"hourly",
+"description" : "<description>",
+"provisionOTD" : true,
+        "parameters" : [
+        {
+            "type" : "weblogic",
+            "version" : "12.1.3.0.4",
+            "edition" : "EE",
+            "domainMode" : "PRODUCTION",
+            "managedServerCount" : "2",
+            "adminPort" : "7001",
+            "deploymentChannelPort" : "9001",
+            "securedAdminPort" : "7002",
+            "contentPort" : "7003",
+            "securedContentPort" : "7004",
+            "domainName" : "<domainName>",
+          	"clusterName" : "<clusterName>",
+            "adminUserName" : "weblogic",
+            "adminPassword" : "<adminPassword>",
+            "nodeManagerPort" : "6555",
+            "nodeManagerUserName" : "nodeMangerAdmin",
+            "nodeManagerPassword" : "<nodeManagerPassword>",
+            "dbServiceName" : "<dbName>",
+            "dbaName" : "SYS",
+            "dbaPassword" : "<dbaPassword>",
+            "shape" : "oc3",
+            "VMsPublicKey" : "<ssh-key value>"
+          
+          },
+          
+        {
+            "type" : "otd",
+            "adminUserName" : "otdAdmin",
+            "adminPassword" : "<adminPassword>",
+            "listenerPortsEnabled" : true,
+            "listenerPort" : "8080",
+            "listenerType" : "http",
+            "securedListenerPort" : "8081",
+            "loadBalancingPolicy" : "least_connection_count",
+            "adminPort" : "8989",
+            "shape" : "oc3",
+            "VMsPublicKey" : "<ssh-key value>"
+        }  
+    ]
+}    
+

@@ -1,0 +1,22 @@
+{
+	"status" : null,
+	"account": null,
+	"writecache" : false,
+	"managed" : true,
+	"description" : null,
+	"tags" : [],
+	"bootable" : false,
+	"hypervisor" : null,
+	"quota" : null,
+	"uri" : null,
+	"status_detail" : null,
+	"imagelist_entry" : -1,
+	"storage_pool" : null,
+	"machineimage_name" : null,
+	"status_timestamp" : null,
+	"shared" : false,
+	"imagelist" : null,
+	"size" : "10G",
+	"properties" : ["/oracle/public/storage/default"],
+	"name" : "<name>"
+}

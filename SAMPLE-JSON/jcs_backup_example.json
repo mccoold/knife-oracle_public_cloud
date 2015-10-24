@@ -1,0 +1,11 @@
+{
+   "fullBackupSchedule":
+   {
+      "hour":"5",
+      "dayOfWeek":"Sun"
+   },
+   "incrementalBackupSchedule":
+   {
+      "hour":"3"
+   }
+}

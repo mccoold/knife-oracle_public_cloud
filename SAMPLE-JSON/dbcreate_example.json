@@ -1,0 +1,23 @@
+{
+  "serviceName": "<name>",
+  "version": "12.1.0.1",
+  "level": "PAAS",
+  "edition": "EE",
+  "subscriptionType": "MONTHLY",
+  "trial": "false",
+  "description": "Description For Test Service",
+  "backupDestination": "BOTH",
+  "cloudStorageContainer": "Storage-<id_domain>/<container>",
+  "cloudStorageUser": "<cloudStorageUser>",
+  "cloudStoragePwd": "<password>",
+  "shape": "oc3",
+  "parameters": [
+    {
+      "type": "db",
+      "usableStorage": "15",
+      "adminPassword": "<dbpassword>",
+      "failoverDatabase": "no",
+      "vmPublicKeyText": "<ssh-key value>"
+    }
+  ]
+}

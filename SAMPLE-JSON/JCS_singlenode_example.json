@@ -1,0 +1,33 @@
+{
+  "serviceName": "<name>",
+  "level": "BASIC",
+  "subscriptionType": "hourly",
+  "description": "<description>",
+  "provisionOTD": false,
+  "parameters": [
+    {
+      "type": "weblogic",
+      "version": "12.1.3.0.4",
+      "edition": "EE",
+      "domainMode": "PRODUCTION",
+      "managedServerCount": "1",
+      "adminPort": "7001",
+      "deploymentChannelPort": "9001",
+      "securedAdminPort": "7002",
+      "contentPort": "7003",
+      "securedContentPort": "7004",
+      "domainName": "<domainName>",
+      "clusterName": "<clusterName>",
+      "adminUserName": "weblogic",
+      "adminPassword": "<adminPassword>",
+      "nodeManagerPort": "6555",
+      "nodeManagerUserName": "nodeMangerAdmin",
+      "nodeManagerPassword": "<password>",
+      "dbServiceName": "<dbname>",
+      "dbaName": "SYS",
+      "dbaPassword": "<dbPassword>",
+      "shape": "oc3",
+      "VMsPublicKey": "<ssh_key>"
+    }
+  ]
+}

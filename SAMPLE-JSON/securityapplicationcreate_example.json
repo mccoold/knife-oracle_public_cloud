@@ -1,0 +1,9 @@
+{
+      "protocol": "udp",
+      "name": "/<id_domain>/<username>/<appname>",
+      "uri": null,
+      "icmptype": "",
+      "dport": "8888",
+      "icmpcode": ""
+      
+    }
