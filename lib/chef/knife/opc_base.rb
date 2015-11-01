@@ -105,12 +105,11 @@ class Chef
               validateresponse = "#{key}" + ' is null, it can not be empty. use -h flag for list of arguements'
               validate = true
               return "#{validate}", "#{validateresponse}"
-            else
-              validateresponse = 'passed validator'
-              validate = false
-              return "#{validate}", "#{validateresponse}"
             end # end of if
           end # end of loop
+          validateresponse = 'passed validator'
+          validate = false
+          return "#{validate}", "#{validateresponse}"
         else
           validateresponse = 'passed validator'
           validate = false

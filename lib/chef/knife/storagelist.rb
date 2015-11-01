@@ -28,6 +28,9 @@ class Chef
          :description => 'storage container name'
 
       def run
+        attrcheck = { 'Container' => config[:container] }
+        valid = attrvalidate(config, attrcheck)
+        abort(valid.at(1)) if valid.at(0) == 'true'
         newcontainer = ObjectStorage.new(config[:id_domain], config[:user_name], config[:passwd])
         newcontainer = newcontainer.list
         if newcontainer.code == '200'

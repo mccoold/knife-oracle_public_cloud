@@ -51,42 +51,40 @@ class Chef
                      'ssh user identity file'   => config[:identity_file]
                     }
         valid = attrvalidate(config, attrcheck)
-        if valid.at(0) == 'true'
-          puts valid.at(1)
+        abort(valid.at(1)) if valid.at(0) == 'true'
+        file = File.read(config[:create_json])
+        data_hash = JSON.parse(file)
+        dbcscreate = InstCreate.new(config[:id_domain], config[:user_name], config[:passwd])
+        createcall = dbcscreate.create(data_hash, 'dbcs')
+        if createcall.code == '401' || createcall.code == '404'
+          print ui.color('ERROR!!!', :red, :bold)
+          print ui.color(createcall.body, :red)
         else
-          file = File.read(config[:create_json])
-          data_hash = JSON.parse(file)
-          dbcscreate = InstCreate.new(config[:id_domain], config[:user_name], config[:passwd])
-          createcall = dbcscreate.create(data_hash, 'dbcs')
-          if createcall.code == '401' || createcall.code == '404'
-            print ui.color('ERROR!!!', :red, :bold)
-            print ui.color(createcall.body, :red)
-          else
+          res = JSON.parse(dbcscreate.create_status(createcall['location']))
+          print ui.color('Provisioning the DB Cloud Asset ' + res['service_name'], :green)
+          while res['status'] == 'In Progress'
+            print ui.color('.', :green)
+            sleep 90
             res = JSON.parse(dbcscreate.create_status(createcall['location']))
-            print ui.color('Provisioning the DB Cloud Asset ' + res['service_name'], :green)
-            while res['status'] == 'In Progress'
-              print ui.color('.', :green)
-              sleep 90
-              res = JSON.parse(dbcscreate.create_status(createcall['location']))
-            end # end of while
-            ####### double check ######
+          end # end of while
+          ####### double check ######
+          res = JSON.parse(dbcscreate.create_status(createcall['location']))
+          while res['status'] == 'In Progress'
+            print ui.color('REST API gave a faulty return ', :cyan)
+            print ui.color('.', :cyan)
+            sleep 120
             res = JSON.parse(dbcscreate.create_status(createcall['location']))
-            while res['status'] == 'In Progress'
-              print ui.color('REST API gave a faulty return ', :cyan)
-              print ui.color('.', :cyan)
-              sleep 120
-              res = JSON.parse(dbcscreate.create_status(createcall['location']))
-            end # end of while again
-            result = SrvList.new(config[:id_domain], config[:user_name], config[:passwd])
-            result = result.inst_list('dbcs', res['service_name'])
-            result = JSON.parse(result.body)
-            ssh_host = result['glassfish_url']
-            ssh_host.delete! 'https://'
-            ssh_host.slice!('4848')
-            bootstrap_for_linux_node("#{ssh_host}").run
-          end # end of if
-          print ui.color('the IP is ' + "#{ssh_host}", :green)
-        end # end of validator
+          end # end of while again
+          result = SrvList.new(config[:id_domain], config[:user_name], config[:passwd])
+          result = result.inst_list('dbcs', res['service_name'])
+          result = JSON.parse(result.body)
+          ssh_host = result['glassfish_url']
+          ssh_host.delete! 'https://'
+          ssh_host.slice!('4848')
+          bootstrap_for_linux_node(ssh_host).run
+        end # end of if
+        print ui.color('the IP is ' + ssh_host, :green)
+        puts ''
       end # end of run
     end # end of create
   end # end of knife

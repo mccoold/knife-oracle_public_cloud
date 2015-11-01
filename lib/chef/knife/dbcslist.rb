@@ -30,19 +30,16 @@ class Chef
       def run
         attrcheck = nil
         valid = attrvalidate(config, attrcheck)
-        if valid.at(0) == 'true'
-          puts valid.at(1)
+        abort(valid.at(1)) if valid.at(0) == 'true'
+        result = SrvList.new(config[:id_domain], config[:user_name], config[:passwd])
+        result = result.service_list('dbcs')
+        if result.code == '401' || result.code == '400' || result.code == '404'
+          print ui.color('error, JSON was not returned  the http response code was')
+          puts result.code
         else
-          result = SrvList.new(config[:id_domain], config[:user_name], config[:passwd])
-          result = result.service_list('dbcs')
-          if result.code == '401' || result.code == '400' || result.code == '404'
-            print ui.color('error, JSON was not returned  the http response code was')
-            puts result.code
-          else
-            print ui.color(JSON.pretty_generate(JSON.parse(result.body)), :green)
-            puts ''
-          end # end of if
-        end # end of validator
+          print ui.color(JSON.pretty_generate(JSON.parse(result.body)), :green)
+          puts ''
+        end # end of if
       end # end of run
     end # end of OPC
   end # end of knife

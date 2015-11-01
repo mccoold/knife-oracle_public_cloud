@@ -62,7 +62,7 @@ class Chef
         confirm('Do you really want to delete this DB server')
         deleteinst = InstDelete.new(config[:id_domain], config[:user_name], config[:passwd])
         deleteinst = deleteinst.delete('dbcs', nil, config[:inst])
-        deleteinst = JSON.parse(deleteinst)
+        deleteinst = JSON.parse(deleteinst.body)
         deleteinst = JSON.pretty_generate(deleteinst)
         print ui.color(deleteinst, :yellow)
         puts ''

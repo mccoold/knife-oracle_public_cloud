@@ -48,32 +48,29 @@ class Chef
       def run
         attrcheck = nil
         valid = attrvalidate(config, attrcheck)
-        if valid.at(0) == 'true'
-          puts valid.at(1)
+        abort(valid.at(1)) if valid.at(0) == 'true'
+        file = File.read("#{config[:create_json]}")
+        data_hash = JSON.parse(file)
+        jcscreate = InstCreate.new(config[:id_domain], config[:user_name], config[:passwd])
+        createcall = jcscreate.create(data_hash, 'jcs')
+        if createcall.code == '401' || createcall.code == '404'
+          print ui.color('Error', :red, :bold)
+          print ui.color(createcall.body, :red)
         else
-          file = File.read("#{config[:create_json]}")
-          data_hash = JSON.parse(file)
-          jcscreate = InstCreate.new(config[:id_domain], config[:user_name], config[:passwd])
-          createcall = jcscreate.create(data_hash, 'jcs')
-          if createcall.code == '401' || createcall.code == '404'
-            print ui.color('Error', :red, :bold)
-            print ui.color(createcall.body, :red)
-          else
+          res = JSON.parse(jcscreate.create_status(createcall['location']))
+          print ui.color('Provisioning the JCS Cloud Asset ' + res['service_name'], :green)
+          while res['status'] == 'In Progress'
+            print ui.color('.', :green)
+            sleep 90
             res = JSON.parse(jcscreate.create_status(createcall['location']))
-            print ui.color('Provisioning the JCS Cloud Asset ' + res['service_name'], :green)
-            while res['status'] == 'In Progress'
-              print ui.color('.', :green)
-              sleep 90
-              res = JSON.parse(jcscreate.create_status(createcall['location']))
-            end # end of while
-            result = SrvList.new(config[:id_domain], config[:user_name], config[:passwd])
-            result = result.inst_list('jcs', res['service_name'])
-            result = JSON.parse(result.body)
-            ssh_host = result['content_url']
-            ssh_host.delete! 'http://'
-            bootstrap_for_linux_node("#{ssh_host}").run
-          end # end of if
-        end # end of validator
+          end # end of while
+          result = SrvList.new(config[:id_domain], config[:user_name], config[:passwd])
+          result = result.inst_list('jcs', res['service_name'])
+          result = JSON.parse(result.body)
+          ssh_host = result['content_url']
+          ssh_host.delete! 'http://'
+          bootstrap_for_linux_node("#{ssh_host}").run
+        end # end of if
       end # end of run
     end # end of create
   end # end of knife

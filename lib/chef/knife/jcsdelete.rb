@@ -81,7 +81,7 @@ class Chef
         data_hash.to_json
         deleteinst = InstDelete.new(config[:id_domain], config[:user_name], config[:passwd])
         deleteinst = deleteinst.delete('jcs', data_hash, config[:inst])
-        deleteinst = JSON.parse(deleteinst)
+        deleteinst = JSON.parse(deleteinst.body)
         deleteinst = JSON.pretty_generate(deleteinst)
         print ui.color(deleteinst, :yellow)
         puts ''
