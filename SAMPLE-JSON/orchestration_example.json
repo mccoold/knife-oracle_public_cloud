@@ -1,0 +1,33 @@
+{
+	"relationships": [], 
+	"account": "/acme/default",
+	"description": "simple orchestration", 
+	"schedule": 
+	   {
+		  "start_time": null, 
+		  "stop_time": null
+	   }, 
+	"uri": null, 
+	"oplans": [
+	   {
+		 "status": "unknown", 
+		 "info": {}, 
+		 "obj_type": "launchplan", 
+		 "ha_policy": "active", 
+		 "label": "webserver_lp", 
+		 "objects": [
+			{
+			   "instances": [
+				 {
+					"shape": "medium", 
+					"label": "primary_webserver", 
+					"imagelist": "/oracle/public/compute_oel_6.4_2GB", 
+					"name": "/acme/administrator/primary_webserver"
+				 }
+			  ]
+			}
+		  ]
+		}
+	], 
+	"name": "/acme/administrator/webportal"
+}

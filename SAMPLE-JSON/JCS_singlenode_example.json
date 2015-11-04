@@ -1,6 +1,6 @@
 {
   "serviceName": "<name>",
-  "level": "BASIC",
+  "level": "<BASIC, PAAS, SUITE>",
   "subscriptionType": "hourly",
   "description": "<description>",
   "provisionOTD": false,
