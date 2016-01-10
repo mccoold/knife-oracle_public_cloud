@@ -1,4 +1,4 @@
- # Author:: Daryn McCool (<mdaryn@hotmail.com>)
+# Author:: Daryn McCool (<mdaryn@hotmail.com>)
 # License:: Apache License, Version 2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,13 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
 class Chef
   class Knife
     require 'chef/knife/opc_base'
     require 'chef/knife/fmwbase'
-    class OpcJcsCreate < Chef::Knife
+    class OpcSoaCreate < Chef::Knife
       include Knife::OpcBase
       include Knife::FmwBase
       deps do
@@ -29,7 +27,7 @@ class Chef
         Chef::Knife::Bootstrap.load_deps
       end # end of deps
 
-      banner 'knife opc jcs create (options)'
+      banner 'knife opc soa create (options)'
 
       option :create_json,
          :short       => '-j',
@@ -50,7 +48,7 @@ class Chef
          :proc        => Proc.new { |key| Chef::Config[:knife][:chef_node_name] = key }
        
       def run
-        fmw_create(config, 'jcs')
+        fmw_create(config, 'soa')
       end # end of run
     end # end of create
   end # end of knife

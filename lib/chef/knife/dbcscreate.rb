@@ -54,8 +54,8 @@ class Chef
         abort(valid.at(1)) if valid.at(0) == 'true'
         file = File.read(config[:create_json])
         data_hash = JSON.parse(file)
-        dbcscreate = InstCreate.new(config[:id_domain], config[:user_name], config[:passwd])
-        createcall = dbcscreate.create(data_hash, 'dbcs')
+        dbcscreate = InstCreate.new(config[:id_domain], config[:user_name], config[:passwd], 'dbcs')
+        createcall = dbcscreate.create(data_hash)
         if createcall.code == '401' || createcall.code == '404'
           print ui.color('ERROR!!!', :red, :bold)
           print ui.color(createcall.body, :red)

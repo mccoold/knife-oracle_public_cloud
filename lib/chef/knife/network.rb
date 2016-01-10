@@ -41,95 +41,95 @@ class Chef
         abort(valid.at(1)) if valid.at(0) == 'true'
         file = File.read(config[:create_json])
         inputdata = JSON.parse(file)
-        inputdata.each do |app|
-          func = app.at(0).downcase
-          app.at(1).each do |conf|
+        inputdata.each do |json_top_level|
+          func = json_top_level.at(0).downcase
+          json_top_level.at(1).each do |category_instance|
             if func == 'secapp'
               networkconfig = SecApp.new(config[:id_domain], config[:user_name], config[:passwd])
-              case conf.at(1)['Action']
+              case category_instance.at(1)['Action'].downcase
               when 'create'
                 puts 'created'
-                networkconfig = networkconfig.modify(config[:rest_endpoint], 'create', conf.at(1)['Parameters'])
+                networkconfig = networkconfig.modify(config[:rest_endpoint], 'create', category_instance.at(1)['Parameters'])
                 puts JSON.pretty_generate(JSON.parse(networkconfig.body))
               when 'delete'
                 networkconfig = networkconfig.modify(config[:rest_endpoint],  'delete',
-                                                     conf.at(1)['Parameters']['name'])
-                puts 'deleted secapplication ' + conf.at(1)['Parameters']['name'] if networkconfig.code == '204'
+                                                     category_instance.at(1)['Parameters']['name'])
+                puts 'deleted secapplication ' + category_instance.at(1)['Parameters']['name'] if networkconfig.code == '204'
               end
             elsif func == 'secrule'
               networkconfig = SecRule.new(config[:id_domain], config[:user_name], config[:passwd])
-              case conf.at(1)['Action']
+              case category_instance.at(1)['Action']
               when 'create'
-                networkconfig = networkconfig.update(config[:rest_endpoint], nil, 'create', conf.at(1)['Parameters'])
+                networkconfig = networkconfig.update(config[:rest_endpoint], nil, 'create', category_instance.at(1)['Parameters'])
                 puts 'created'
                 puts JSON.pretty_generate(JSON.parse(networkconfig.body))
               when 'modify'
-                networkconfig = networkconfig.update(config[:rest_endpoint], nil, 'update', conf.at(1)['Parameters'])
+                networkconfig = networkconfig.update(config[:rest_endpoint], nil, 'update', category_instance.at(1)['Parameters'])
                 puts 'updated'
                 puts JSON.pretty_generate(JSON.parse(networkconfig.body))
               when 'delete'
-                networkconfig = networkconfig.update(config[:rest_endpoint], conf.at(1)['Parameters']['name'], 'delete',
-                                                             conf.at(1)['Parameters'])
-                puts 'deleted rule ' + conf.at(1)['Parameters']['name'] if networkconfig.code == '204'
+                networkconfig = networkconfig.update(config[:rest_endpoint], category_instance.at(1)['Parameters']['name'], 'delete',
+                                                             category_instance.at(1)['Parameters'])
+                puts 'deleted rule ' + category_instance.at(1)['Parameters']['name'] if networkconfig.code == '204'
               end
             elsif func == 'seclist'
               networkconfig = SecList.new(config[:id_domain], config[:user_name], config[:passwd])
-              case conf.at(1)['Action']
+              case category_instance.at(1)['Action']
               when 'create'
                 puts 'created'
-                networkconfig = networkconfig.update(config[:rest_endpoint], nil, 'create', conf.at(1)['Parameters'])
+                networkconfig = networkconfig.update(config[:rest_endpoint], nil, 'create', category_instance.at(1)['Parameters'])
                 puts JSON.pretty_generate(JSON.parse(networkconfig.body))
               when 'modify'
                 puts 'updated'
-                networkconfig = networkconfig.update(config[:rest_endpoint], nil, 'update', conf.at(1)['Parameters'])
+                networkconfig = networkconfig.update(config[:rest_endpoint], nil, 'update', category_instance.at(1)['Parameters'])
                 puts JSON.pretty_generate(JSON.parse(networkconfig.body))
               when 'delete'
-                networkconfig = networkconfig.update(config[:rest_endpoint], conf.at(1)['Parameters']['name'], 'delete',
-                                                     app.at(1)['Parameters'])
-                puts 'deleted Sec List ' + conf.at(1)['Parameters']['name'] if networkconfig.code == '204'
+                networkconfig = networkconfig.update(config[:rest_endpoint], category_instance.at(1)['Parameters']['name'], 'delete',
+                                                     json_top_level.at(1)['Parameters'])
+                puts 'deleted Sec List ' + category_instance.at(1)['Parameters']['name'] if networkconfig.code == '204'
               end
             elsif func == 'seciplist'
               networkconfig = SecIPList.new(config[:id_domain], config[:user_name], config[:passwd])
-              case conf.at(1)['Action']
+              case category_instance.at(1)['Action']
               when 'create'
-                networkconfig = networkconfig.update(config[:rest_endpoint], nil, 'create', conf.at(1)['Parameters'])
+                networkconfig = networkconfig.update(config[:rest_endpoint], nil, 'create', category_instance.at(1)['Parameters'])
                 puts 'created'
                 puts JSON.pretty_generate(JSON.parse(networkconfig.body))
               when 'modify'
-                networkconfig = networkconfig.update(config[:rest_endpoint], nil, 'update', conf.at(1)['Parameters'])
+                networkconfig = networkconfig.update(config[:rest_endpoint], nil, 'update', category_instance.at(1)['Parameters'])
                 puts 'updated'
                 puts JSON.pretty_generate(JSON.parse(networkconfig.body))
               when 'delete'
-                networkconfig = networkconfig.update(config[:rest_endpoint], conf.at(1)['Parameters']['name'], 'delete',
-                                                     conf.at(1)['Parameters'])
-                puts 'deleted SecIP List ' + conf.at(1)['Parameters']['name'] if networkconfig.code == '204'
+                networkconfig = networkconfig.update(config[:rest_endpoint], category_instance.at(1)['Parameters']['name'], 'delete',
+                                                     category_instance.at(1)['Parameters'])
+                puts 'deleted SecIP List ' + category_instance.at(1)['Parameters']['name'] if networkconfig.code == '204'
               end
             elsif func == 'secassoc'
               networkconfig = SecAssoc.new(config[:id_domain], config[:user_name], config[:passwd])
-              case conf.at(1)['Action']
+              case category_instance.at(1)['Action']
               when 'create'
-                networkconfig = networkconfig.update(config[:rest_endpoint], nil, 'create', conf.at(1)['Parameters'])
+                networkconfig = networkconfig.update(config[:rest_endpoint], nil, 'create', category_instance.at(1)['Parameters'])
                 puts JSON.pretty_generate(JSON.parse(networkconfig.body))
               when 'modify'
                 puts 'nothing done yet'
               when 'delete'
-                networkconfig = networkconfig.update(config[:rest_endpoint], conf.at(1)['Parameters']['name'], 'delete',
-                                                     conf.at(1)['Parameters'])
-                puts 'deleted Secassoc ' + app.at(1)['Parameters']['name'] if networkconfig.code == '204'
+                networkconfig = networkconfig.update(config[:rest_endpoint], category_instance.at(1)['Parameters']['name'], 'delete',
+                                                     category_instance.at(1)['Parameters'])
+                puts 'deleted Secassoc ' + json_top_level.at(1)['Parameters']['name'] if networkconfig.code == '204'
               end
             elsif func == 'ip'
               networkconfig = IPUtil.new(config[:id_domain], config[:user_name], config[:passwd])
-              callclass = conf.at(1)['Class']
-              case conf.at(1)['Action']
+              callclass = category_instance.at(1)['Class']
+              case category_instance.at(1)['Action']
               when 'create'
-                networkconfig = networkconfig.update(config[:rest_endpoint], nil, 'create', callclass, conf.at(1)['Parameters'])
+                networkconfig = networkconfig.update(config[:rest_endpoint], nil, 'create', callclass, category_instance.at(1)['Parameters'])
                 puts JSON.pretty_generate(JSON.parse(networkconfig.body))
               when 'modify'
                 puts 'nothing done yet'
               when 'delete'
-                networkconfig = networkconfig.update(config[:rest_endpoint], conf.at(1)['Parameters']['name'], 'delete',
-                                                     callclass, conf.at(1)['Parameters'])
-                puts 'deleted IP ' + callclass + ' ' + conf.at(1)['Parameters']['name'] if networkconfig.code == '204'
+                networkconfig = networkconfig.update(config[:rest_endpoint], category_instance.at(1)['Parameters']['name'], 'delete',
+                                                     callclass, category_instance.at(1)['Parameters'])
+                puts 'deleted IP ' + callclass + ' ' + category_instance.at(1)['Parameters']['name'] if networkconfig.code == '204'
               end
             end # end of if
           end # end of case
