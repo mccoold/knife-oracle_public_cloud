@@ -36,6 +36,10 @@ class Chef
             :long => '--run-list RUN_LIST',
             :description => 'Comma separated list of roles/recipes to apply',
             :proc => lambda { |o| o.split(/[\s,]+/) }
+          option :bootstrap_version,
+            :long => "--bootstrap-version VERSION",
+            :description => "The version of Chef to install",
+            :proc => lambda { |v| Chef::Config[:knife][:bootstrap_version] = v }
         end # end of includer
       end # end of included
 
@@ -46,7 +50,8 @@ class Chef
 
       def bootstrap_for_linux_node(ssh_host)
         bootstrap = Chef::Knife::Bootstrap.new
-        bootstrap.name_args = [ssh_host]
+        bootstrap.name_args = ssh_host
+        puts ssh_host
         bootstrap.config[:ssh_user] = config[:ssh_user]
         bootstrap.config[:ssh_password] = locate_config_value(:ssh_password)
         bootstrap.config[:ssh_port] = config[:ssh_port]
@@ -54,6 +59,7 @@ class Chef
         bootstrap.config[:identity_file] = config[:identity_file]
         bootstrap.config[:chef_node_name] = locate_config_value(:chef_node_name)
         bootstrap.config[:use_sudo] = true unless config[:ssh_user] == 'root'
+        puts 'in boot for linux'
         bootstrap_common_params(bootstrap)
       end # end bootstrap
 
@@ -83,39 +89,11 @@ class Chef
         bootstrap.config[:use_sudo_password] = locate_config_value(:use_sudo_password)
         # Modify global configuration state to ensure hint gets set by
         # knife-bootstrap
+        puts 'in bootstrap common'
+        puts bootstrap.config
+        puts bootstrap.name_args
         bootstrap
       end # end of bootstap common
-
-      def attrvalidate(options, attrcheck)
-        if options[:id_domain].nil?
-          validateresponse = 'OPC id domain is null, it can not be empty. use -h flag for list of arguements'
-          validate = true
-          return "#{validate}", "#{validateresponse}"
-        elsif options[:passwd].nil?
-          validateresponse = 'OPC password is null, it can not be empty. use -h flag for list of arguements'
-          validate = true
-          return "#{validate}", "#{validateresponse}"
-        elsif options[:user_name].nil?
-          validateresponse = 'OPC user name is null, it can not be empty. use -h flag for list of arguements'
-          validate = true
-          return "#{validate}", "#{validateresponse}"
-        elsif !attrcheck.nil?
-          attrcheck.each do |key, attr|
-            if attr.nil?
-              validateresponse = "#{key}" + ' is null, it can not be empty. use -h flag for list of arguements'
-              validate = true
-              return "#{validate}", "#{validateresponse}"
-            end # end of if
-          end # end of loop
-          validateresponse = 'passed validator'
-          validate = false
-          return "#{validate}", "#{validateresponse}"
-        else
-          validateresponse = 'passed validator'
-          validate = false
-          return "#{validate}", "#{validateresponse}"
-        end # end of if
-      end # end of method
     end # end of OpcBase
   end # end of knife
 end # end of class chef

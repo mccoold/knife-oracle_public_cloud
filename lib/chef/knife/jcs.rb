@@ -1,5 +1,4 @@
-#
-# Author:: Daryn McCool (<mdaryn@hotmail.com>)
+ # Author:: Daryn McCool (<mdaryn@hotmail.com>)
 # License:: Apache License, Version 2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +13,75 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# These two are needed for the '--purge' deletion case
-require 'chef/node'
-require 'chef/api_client'
-# Needed to delete the instance from OPC
-require 'OPC'
-require 'chef/knife/opc_base'
 class Chef
+  
   class Knife
+    require 'chef/knife/opc_base'
+    require 'chef/knife/fmwbase'
+    class OpcJcsCreate < Chef::Knife
+      include Knife::OpcBase
+      include Knife::FmwBase
+      deps do
+        require 'chef/json_compat'
+        require 'OPC'
+        require 'chef/knife/bootstrap'
+        Chef::Knife::Bootstrap.load_deps
+      end # end of deps
+
+      banner 'knife opc jcs create (options)'
+
+      option :create_json,
+         :short       => '-j',
+         :long        => '--create_json JSON',
+         :description => 'json file to describe server'
+      option :identity_file,
+         :long        => '--identity-file IDENTITY_FILE',
+         :description => 'The SSH identity file used for authentication'
+      option :ssh_user,
+         :short       => '-x USERNAME',
+         :long        => '--ssh-user USERNAME',
+         :description => 'The ssh username',
+         :default     => 'opc'
+      option :chef_node_name,
+         :short       => '-N NAME',
+         :long        => '--node-name NAME',
+         :description => 'The Chef node name for your new node',
+         :proc        => Proc.new { |key| Chef::Config[:knife][:chef_node_name] = key }
+       
+      def run
+        fmw_create(config, 'jcs')
+      end # end of run
+    end # end of create
+    
+    class OpcJcsList < Chef::Knife
+      include Knife::OpcBase
+      deps do
+        require 'chef/json_compat'
+        require 'OPC'
+      end # end of deps
+      banner 'knife opc jcs list (options)'
+
+      def run
+        attrcheck = nil
+        @validate = Validator.new
+        @validate.attrvalidate(config, attrcheck)
+        result = SrvList.new(config[:id_domain], config[:user_name], config[:passwd], 'jcs')
+        result = result.service_list
+        if result.code == '401' || result.code == '400' || result.code == '404'
+          print ui.color('error, JSON was not returned  the http response code was', :red)
+          puts result.code
+          put result.body
+        else
+          print ui.color(JSON.pretty_generate(JSON.parse(result.body)), :green)
+          puts ''
+        end # end of if
+      end # end of run
+    end # end of list
+       
     class OpcJcsDelete < Knife
+      # These two are needed for the '--purge' deletion case
+      require 'chef/node'
+      require 'chef/api_client'
       include Knife::OpcBase
       banner 'knife opc jcs delete (options)'
 
@@ -77,6 +136,9 @@ class Chef
 
       def run
         confirm('Do you really want to delete this server')
+        attrcheck = nil
+        @validate = Validator.new
+        @validate.attrvalidate(config, attrcheck)
         data_hash = { 'dbaName' => config[:dbaname], 'dbaPassword' => config[:dbapass], 'forceDelete' => config[:forcedelete] }
         data_hash.to_json
         deleteinst = InstDelete.new(config[:id_domain], config[:user_name], config[:passwd])

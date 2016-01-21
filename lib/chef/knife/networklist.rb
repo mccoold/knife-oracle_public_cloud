@@ -13,10 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-require 'chef/knife/opc_base'
-require 'OPC'
-require 'opc_client'
+
 class Chef
+  require 'chef/knife/opc_base'
+  require 'OPC'
+  require 'opc_client'
+  
   class Knife
     class OpcNetworkList < Chef::Knife
       include Knife::OpcBase
@@ -50,8 +52,8 @@ class Chef
                    'Container'       => config[:container],
                    'Function'        => config[:function] 
                   }
-      valid = attrvalidate(config, attrcheck)
-      abort(valid.at(1)) if valid.at(0) == 'true'
+      @validate = Validator.new
+      @validate.attrvalidate(config, attrcheck)
       case config[:function]
         when 'seclist'
           seclistc = SecListClient.new

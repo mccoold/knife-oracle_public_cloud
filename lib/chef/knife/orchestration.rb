@@ -53,8 +53,8 @@ class Chef
                    'Action'          => config[:action],
                    'Rest End Point'  => config[:rest_endpoint]
                   }
-      valid = attrvalidate(config, attrcheck)
-      abort(valid.at(1)) if valid.at(0) == 'true'
+      @validate = Validator.new
+      @validate.attrvalidate(config, attrcheck)
       orch = OrchClient.new
       case config[:action]
       when 'list', 'details'
@@ -62,8 +62,8 @@ class Chef
       when 'create', 'update', 'delete'
         attrcheck = { 'create_json' => config[:create_json] } unless config[:action].downcase == 'delete'
         attrcheck = { 'orch Instance -I' => config[:inst] } if config[:action].downcase == 'delete'
-        valid = attrvalidate(config, attrcheck) 
-        abort(valid.at(1)) if valid.at(0) == 'true'
+        @validate = Validator.new
+        @validate.attrvalidate(@options, attrcheck)
         print ui.color(orch.update(config), :green)
       when 'start', 'stop'
         orch.manage(config)

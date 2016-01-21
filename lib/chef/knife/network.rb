@@ -37,8 +37,8 @@ class Chef
 
       def run
         attrcheck = { 'create_json' => config[:create_json] }
-        valid = attrvalidate(config, attrcheck)
-        abort(valid.at(1)) if valid.at(0) == 'true'
+        @validate = Validator.new
+        @validate.attrvalidate(config, attrcheck)
         file = File.read(config[:create_json])
         inputdata = JSON.parse(file)
         inputdata.each do |json_top_level|
