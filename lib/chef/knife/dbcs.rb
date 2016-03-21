@@ -29,14 +29,6 @@ class Chef
          :short       => '-j',
          :long        => '--create_json JSON',
          :description => 'json file to describe server'
-      option :identity_file,
-         :long        => '--identity-file IDENTITY_FILE',
-         :description => 'The SSH identity file used for authentication'
-      option :ssh_user,
-         :short       => '-x USERNAME',
-         :long        => '--ssh-user USERNAME',
-         :description => 'The ssh username',
-         :default     => 'opc'
       option :chef_node_name,
          :short       => '-N NAME',
          :long        => '--node-name NAME',
@@ -44,6 +36,10 @@ class Chef
          :proc        => Proc.new { |key| Chef::Config[:knife][:chef_node_name] = key }
 
       def run
+        validate!
+        config[:id_domain] = locate_config_value(:opc_id_domain)
+        config[:user_name] = locate_config_value(:opc_username)
+        config[:identity_file] = locate_config_value(:opc_ssh_identity_file)
         attrcheck = {
                      'create_json'     => config[:create_json],
                      'ssh-user'        => config[:ssh_user],
@@ -59,20 +55,20 @@ class Chef
           print ui.color('Error with REST call, returned http code: ' + createcall.code + ' ', :red, :bold)
           print ui.color(createcall.body, :red)
         else
-          res = JSON.parse(dbcscreate.create_status(createcall['location']))
+          res = JSON.parse(dbcscreate.create_status(createcall['location']).body) unless dbcscreate.create_status(createcall['location']).code == '500'
           print ui.color('Provisioning the DB Cloud Asset ' + res['service_name'], :green)
           while res['status'] == 'In Progress' || res['status'] == 'Provisioning completed'
             print ui.color('.', :green)
             sleep 90
-            res = JSON.parse(dbcscreate.create_status(createcall['location']))
+            res = JSON.parse(dbcscreate.create_status(createcall['location']).body) unless dbcscreate.create_status(createcall['location']).code == '500'
           end # end of while
           ####### double check ######
-          res = JSON.parse(dbcscreate.create_status(createcall['location']))
+          res = JSON.parse(dbcscreate.create_status(createcall['location']).body)
           while res['status'] == 'In Progress' || res['status'] == 'Provisioning completed'
             print ui.color('REST API gave a faulty return ', :cyan)
             print ui.color('.', :cyan)
             sleep 120
-            res = JSON.parse(dbcscreate.create_status(createcall['location']))
+            res = JSON.parse(dbcscreate.create_status(createcall['location']).body)
           end # end of while again
           result = SrvList.new(config[:id_domain], config[:user_name], config[:passwd], 'dbcs')
           result = result.inst_list(res['service_name'])

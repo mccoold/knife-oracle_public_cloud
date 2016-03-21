@@ -18,21 +18,42 @@ class Chef
           print ui.color('Error with REST call, returned http code: ' + createcall.code + ' ', :red, :bold)
           print ui.color(createcall.body, :red)
         else 
-          res = JSON.parse(paas_create.create_status(createcall['location']))
-          print ui.color('Provisioning the Cloud Asset ' + res['service_name'], :green)
-          while res['status'] == 'In Progress' || res['status'] == 'Provisioning completed'
+          # res = JSON.parse(paas_create.create_status(createcall['location']))
+          status_object = paas_create.create_status(createcall['location'])
+          status_message =  status_object.body #have to break all the calls out for error handling REST end point tends not to be consistant
+          status_message_status = JSON.parse(status_message) if status_object.code == '202'
+          print ui.color('Provisioning the Cloud Asset ' + status_message_status['service_name'], :green)
+          breakout = 1
+          while status_message_status['status'] == 'In Progress' || status_message_status['status'] == 'Provisioning completed'
             print ui.color('.', :green)
             sleep 90
-            res = JSON.parse(paas_create.create_status(createcall['location']))
+            status_object = paas_create.create_status(createcall['location'])
+            status_message =  status_object.body
+            status_message_status = JSON.parse(status_message) if status_object.code == '202' || status_object.code == '200'
+            if status_object.code == '500'
+              breakkout++
+              abort('Rest calls failing 5 times ' + status_object.code) if breakout == 5
+            end # end of if
           end # end of while
           result = SrvList.new(config[:id_domain], config[:user_name], config[:passwd], service)
-          result = result.inst_list(res['service_name'])
+          result = result.inst_list(status_message_status['service_name'])
           result = JSON.parse(result.body)
           ssh_host = result['content_url']
           ssh_host.delete! 'http://'
           bootstrap_for_linux_node(ssh_host).run
         end # end of if
       end # end of fmw_create
+      
+      def fmw_delete(data_hash, service)
+        deleteinst = InstDelete.new(config[:id_domain], config[:user_name], config[:passwd], service)
+        deleteinst = deleteinst.delete(data_hash, config[:inst])
+        deleteinst = JSON.parse(deleteinst.body)
+        deleteinst = JSON.pretty_generate(deleteinst)
+        print ui.color(deleteinst, :yellow)
+        puts ''
+        ui.warn("Deleted instance #{config[:inst]}")
+        chef_delete
+      end # end of delete
     end # end of FmwBase
   end # end of knife
 end # end of chef

@@ -33,7 +33,8 @@ class Chef
       option :rest_endpoint,
          :short       => '-R',
          :long        => '--rest_endpoint REST_ENDPOINT',
-         :description => 'Rest end point for compute'
+         :description => 'Rest end point for compute',
+         :proc        =>  Proc.new {|key| Chef::Config[:knife][:opc_rest_endpoint] = key}
 
       def run
         attrcheck = { 'create_json' => config[:create_json] }
