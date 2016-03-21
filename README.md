@@ -10,7 +10,7 @@ The plugin adds knife command and options to allow users to provision Java insta
 into chef with a single command.  The plug-in also creates storage containers, but they are not bootstrapped for obvious reasons
 Has list feature for storage, DB, and Java as well
 ### Version ###
-* 0.0.1
+* 0.1.0
 
 ### How do I get set up? ###
 
@@ -22,17 +22,13 @@ comes embedded with Chef and is used by knife
 
  **Dependencies**
 
-     Ruby (1.8+), knife(chef 11.4+), OPC(0.0.1)
+     Ruby (1.8+), knife(chef 11.4+), OPC(0.3.1)
 
 
 ### Usage ###
 
 
-	* The following flags are required with all commands 
-		* -u --user_name  The user name for the Oracle cloud account
-		* --id_domain  The id domain for the Oracle Cloud account
-		* -p --passwd The password for the Oracle cloud account
-
+	* See COMMAND_LINE_USAGE
 
 
 ### Who do I talk to? ###

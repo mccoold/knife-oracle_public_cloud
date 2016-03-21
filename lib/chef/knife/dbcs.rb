@@ -92,6 +92,10 @@ class Chef
       banner 'knife opc dbcs list (options)'
 
       def run
+        validate!
+        config[:id_domain] = locate_config_value(:opc_id_domain)
+        config[:user_name] = locate_config_value(:opc_username)
+        config[:identity_file] = locate_config_value(:opc_ssh_identity_file)
         attrcheck = nil
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)
@@ -117,7 +121,7 @@ class Chef
       option :purge,
         :long        => '--purge',
         :boolean     => true,
-        :default     => false,
+        :default     => true,
         :description => 'Destroy corresponding node and client on the Chef Server.
         Assumes node and client have the same name as the server (if not, add the --node-name option).'
 
@@ -148,12 +152,16 @@ class Chef
       end
 
       def run
+        validate!
+        config[:id_domain] = locate_config_value(:opc_id_domain)
+        config[:user_name] = locate_config_value(:opc_username)
+        config[:identity_file] = locate_config_value(:opc_ssh_identity_file)
         confirm('Do you really want to delete this DB server')
-        attrcheck = nil
+        attrcheck = {'instance'  => config[:inst]}
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)
-        deleteinst = InstDelete.new(config[:id_domain], config[:user_name], config[:passwd])
-        deleteinst = deleteinst.delete('dbcs', nil, config[:inst])
+        deleteinst = InstDelete.new(config[:id_domain], config[:user_name], config[:passwd], 'dbcs')
+        deleteinst = deleteinst.delete(nil, config[:inst])
         deleteinst = JSON.parse(deleteinst.body)
         deleteinst = JSON.pretty_generate(deleteinst)
         print ui.color(deleteinst, :yellow)

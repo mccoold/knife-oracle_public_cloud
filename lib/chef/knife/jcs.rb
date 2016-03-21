@@ -64,12 +64,12 @@ class Chef
 
       def run
         validate!
-        config[:id_domain] = locate_config_value[:id_domain]
-        config[:user_name] = locate_config_value[:user_name]
+        config[:id_domain] = locate_config_value(:opc_id_domain)
+        config[:user_name] = locate_config_value(:opc_username)
         attrcheck = nil
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)
-        result = SrvList.new(locate_config_value[:id_domain], locate_config_value[:user_name], config[:passwd], 'jcs')
+        result = SrvList.new(config[:id_domain], config[:user_name], config[:passwd], 'jcs')
         result = result.service_list
         if result.code == '401' || result.code == '400' || result.code == '404'
           print ui.color('error, JSON was not returned  the http response code was', :red)
@@ -93,7 +93,7 @@ class Chef
       option :purge,
         :long        => '--purge',
         :boolean     => true,
-        :default     => false,
+        :default     => true,
         :description => 'Destroy corresponding node and client on the Chef Server.
         Assumes node and client have the same name as the server (if not, add the --node-name option).'
 
@@ -129,7 +129,6 @@ class Chef
       # the user is already making their intent known.  It is not
       # necessary to make them confirm two more times.
       
-
       def run
         validate!
         config[:id_domain] = locate_config_value(:opc_id_domain)

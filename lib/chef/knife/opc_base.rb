@@ -131,15 +131,15 @@ class Chef
       
       def chef_delete
          if config[:purge]
-           puts 'in purge'
+           # puts 'in purge'
           if config[:chef_node_name]
-            puts 'in chef node name'
+            # puts 'in chef node name'
             thing_to_delete = config[:chef_node_name]
-            puts thing_to_delete
-            puts 'should of seen it'
+            # puts thing_to_delete
+           # puts 'should of seen it'
           else
             thing_to_delete = config[:inst]
-            puts 'in first else'
+           # puts 'in first else'
           end # end of chef_node_name if
           destroy_item(Chef::Node, thing_to_delete, 'node')
           destroy_item(Chef::ApiClient, thing_to_delete, 'client')
