@@ -34,9 +34,9 @@ class Chef
          :short       => '-R',
          :long        => '--rest_endpoint REST_ENDPOINT',
          :description => 'Rest end point for compute',
-         :proc        =>  Proc.new {|key| Chef::Config[:knife][:opc_rest_endpoint] = key}
+         :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_rest_endpoint] = key }
 
-      def run
+      def run # rubocop:disable Metrics/AbcSize
         attrcheck = { 'create_json' => config[:create_json] }
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)
@@ -123,7 +123,8 @@ class Chef
               callclass = category_instance.at(1)['Class']
               case category_instance.at(1)['Action']
               when 'create'
-                networkconfig = networkconfig.update(config[:rest_endpoint], nil, 'create', callclass, category_instance.at(1)['Parameters'])
+                networkconfig = networkconfig.update(config[:rest_endpoint], nil, 'create',
+                                                     callclass, category_instance.at(1)['Parameters'])
                 puts JSON.pretty_generate(JSON.parse(networkconfig.body))
               when 'modify'
                 puts 'nothing done yet'

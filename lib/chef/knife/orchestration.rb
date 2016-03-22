@@ -24,7 +24,7 @@ class Chef
       deps do
         require 'chef/json_compat'
         require 'chef/knife/bootstrap'
-        
+
         Chef::Knife::Bootstrap.load_deps
       end # end of deps
       banner 'knife opc orchestration (options)'
@@ -36,7 +36,7 @@ class Chef
          :short       => '-R',
          :long        => '--rest_endpoint REST_ENDPOINT',
          :description => 'Rest end point for OPC IaaS Compute',
-         :proc        =>  Proc.new {|key| Chef::Config[:knife][:opc_rest_endpoint] = key}
+         :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_rest_endpoint] = key }
       option :action,
          :short       => '-A',
          :long        => '--action ACTION',
@@ -55,19 +55,19 @@ class Chef
       option :purge,
         :long        => '--purge',
         :boolean     => true,
-        :default     => false,
+        :default     => true,
         :description => 'Destroy corresponding node and client on the Chef Server.
         Assumes node and client have the same name as the server (if not, add the --node-name option).'
-  
-    def run
-      validate!
-       config[:id_domain] = locate_config_value(:opc_id_domain)
-       config[:user_name] = locate_config_value(:opc_username)
-       config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
+
+      def run # rubocop:disable Metrics/AbcSize
+        validate!
+        config[:id_domain] = locate_config_value(:opc_id_domain)
+        config[:user_name] = locate_config_value(:opc_username)
+        config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
         attrcheck = {
-                     'Action'          => config[:action],
-                     'Rest End Point'  => config[:rest_endpoint]
-                    }
+          'Action'          => config[:action],
+          'Rest End Point'  => config[:rest_endpoint]
+        }
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)
         orch = OrchClient.new
@@ -75,32 +75,33 @@ class Chef
         orch.orch = Orchestration.new(config[:id_domain], config[:user_name], config[:passwd], config[:rest_endpoint])
         case config[:action]
         when 'list', 'details'
-          attrcheck = {'container'  => config[:container]}
+          attrcheck = { 'container'  => config[:container] }
           @validate.attrvalidate(config, attrcheck)
           print ui.color(orch.list, :green)
         when 'create', 'update', 'delete'
           attrcheck = { 'create_json' => config[:create_json] } unless config[:action].downcase == 'delete'
           attrcheck = { 'container' => config[:container] } if config[:action].downcase == 'delete'
-          @validate.attrvalidate(@options, attrcheck)
+          @validate.attrvalidate(config, attrcheck)
           print ui.color(orch.update, :green)
-          #puts orch.update
         when 'start', 'stop'
           attrcheck = { 'container' => config[:container],
-                        'IP address access' => config[:ip_access]}
-          @validate.attrvalidate(@options, attrcheck)
+                        'IP address access' => config[:ip_access] }
+          @validate.attrvalidate(config, attrcheck)
           instance_data = orch_json_parse(orch.list) if config[:action] == 'stop'
           instance_data = orch_json_parse(orch.manage) if config[:action] == 'start'
-          instance_name = instance_data[1]
           instanceconfig = Instance.new(config[:id_domain], config[:user_name], config[:passwd], config[:rest_endpoint])
-          #print ui.color(instanceconfig = instanceconfig.list_ip(instance_name), :green)
-          instance_IP = instanceconfig.list_ip(instance_name)
-          ssh_host = instance_IP[1] if config[:ip_access] == 'public'
-          ssh_host = instance_IP[0] if config[:ip_access] == 'private'
-          Chef::Config[:knife][:chef_node_name] = instance_data[0]
-          config[:chef_node_name] = instance_data[0]
-          print ui.color(orch.manage, :green) if config[:action] == 'stop'
-          chef_delete if config[:action] == 'stop'
-          bootstrap_for_linux_node(ssh_host).run if config[:action] == 'start'
+          instance_data.each do |instance|
+            config[:run_list] = instance['runlist'] unless  instance['runlist'].nil? # !config[:run_list].empty?
+            instance_name = instance['name']
+            instance_IP = instanceconfig.list_ip(instance_name)
+            ssh_host = instance_IP[1] if config[:ip_access] == 'public'
+            ssh_host = instance_IP[0] if config[:ip_access] == 'private'
+            Chef::Config[:knife][:chef_node_name] = instance['label']
+            config[:chef_node_name] = instance['label']
+            print ui.color(orch.manage, :green) if config[:action] == 'stop'
+            chef_delete if config[:action] == 'stop'
+            bootstrap_for_linux_node(ssh_host).run if config[:action] == 'start'
+          end # end of loop
         end # end of case
       end # end of run
     end # end of orch

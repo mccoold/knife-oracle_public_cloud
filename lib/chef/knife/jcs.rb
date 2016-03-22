@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 class Chef
-  
   class Knife
     require 'chef/knife/opc_base'
     require 'chef/knife/fmwbase'
@@ -34,17 +33,12 @@ class Chef
          :short       => '-j',
          :long        => '--create_json JSON',
          :description => 'json file to describe server'
-      option :ssh_user,
-         :short       => '-x USERNAME',
-         :long        => '--ssh-user USERNAME',
-         :description => 'The ssh username',
-         :default     => 'opc'
       option :chef_node_name,
          :short       => '-N NAME',
          :long        => '--node-name NAME',
          :description => 'The Chef node name for your new node',
          :proc        => Proc.new { |key| Chef::Config[:knife][:chef_node_name] = key }
-       
+
       def run
         validate!
         config[:id_domain] = locate_config_value(:opc_id_domain)
@@ -53,7 +47,7 @@ class Chef
         fmw_create(config, 'jcs')
       end # end of run
     end # end of create
-    
+
     class OpcJcsList < Chef::Knife
       include Knife::OpcBase
       deps do
@@ -62,7 +56,7 @@ class Chef
       end # end of deps
       banner 'knife opc jcs list (options)'
 
-      def run
+      def run # rubocop:disable Metrics/AbcSize
         validate!
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)
@@ -81,7 +75,7 @@ class Chef
         end # end of if
       end # end of run
     end # end of list
-       
+
     class OpcJcsDelete < Knife
       # These two are needed for the '--purge' deletion case
       require 'chef/node'
@@ -128,14 +122,14 @@ class Chef
       # flag (and also explicitly confirming the server destruction!)
       # the user is already making their intent known.  It is not
       # necessary to make them confirm two more times.
-      
-      def run
+
+      def run # rubocop:disable Metrics/AbcSize
         validate!
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)
         config[:identity_file] = locate_config_value(:opc_ssh_identity_file)
         confirm('Do you really want to delete this server')
-        attrcheck = {'chef node name'  => config[:chef_node_name]}
+        attrcheck = { 'chef node name'  => config[:chef_node_name] }
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)
         data_hash = { 'dbaName' => config[:dbaname], 'dbaPassword' => config[:dbapass], 'forceDelete' => config[:forcedelete] }

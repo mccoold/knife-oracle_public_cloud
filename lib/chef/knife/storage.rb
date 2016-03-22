@@ -56,7 +56,7 @@ class Chef
          :long        => '--container CONTAINER',
          :description => 'storage container name'
 
-      def run
+      def run # rubocop:disable Metrics/AbcSize
         attrcheck = { 'Container' => config[:container] }
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)

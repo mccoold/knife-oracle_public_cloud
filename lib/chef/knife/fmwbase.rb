@@ -1,13 +1,15 @@
 class Chef
   require 'opc_client'
-  
+
   class Knife
     module FmwBase
-      def fmw_create(config, service)
-        attrcheck = {'create_json'     => config[:create_json],
-                     'ssh-user'        => config[:ssh_user],
-                     'identity file'   => config[:identity_file],
-                     'run-list'        => config[:run_list]}
+      def fmw_create(config, service) # rubocop:disable Metrics/AbcSize
+        attrcheck = { 
+          'create_json'     => config[:create_json],
+          'ssh-user'        => config[:ssh_user],
+          'identity file'   => config[:identity_file],
+          'run-list'        => config[:run_list]
+        }
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)
         create_json = File.read(config[:create_json])
@@ -17,10 +19,11 @@ class Chef
         if createcall.code == '401' || createcall.code == '404' || createcall.code == '400'
           print ui.color('Error with REST call, returned http code: ' + createcall.code + ' ', :red, :bold)
           print ui.color(createcall.body, :red)
-        else 
+        else
           # res = JSON.parse(paas_create.create_status(createcall['location']))
           status_object = paas_create.create_status(createcall['location'])
-          status_message =  status_object.body #have to break all the calls out for error handling REST end point tends not to be consistant
+          status_message =  status_object.body # have to break all the calls out for error
+          # handling REST end point tends not to be consistant
           status_message_status = JSON.parse(status_message) if status_object.code == '202'
           print ui.color('Provisioning the Cloud Asset ' + status_message_status['service_name'], :green)
           breakout = 1
@@ -43,8 +46,8 @@ class Chef
           bootstrap_for_linux_node(ssh_host).run
         end # end of if
       end # end of fmw_create
-      
-      def fmw_delete(data_hash, service)
+
+      def fmw_delete(data_hash, service) # rubocop:disable Metrics/AbcSize
         deleteinst = InstDelete.new(config[:id_domain], config[:user_name], config[:passwd], service)
         deleteinst = deleteinst.delete(data_hash, config[:inst])
         deleteinst = JSON.parse(deleteinst.body)

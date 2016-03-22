@@ -17,18 +17,18 @@ require 'chef/knife'
 class Chef
   class Knife
     module OpcBase
-      def self.included(includer)
+      def self.included(includer) # rubocop:disable Metrics/AbcSize
         includer.class_eval do
           option :user_name,
              :short       => '-u',
              :long        => '--user_name NAME',
              :description => 'username for OPC account',
-             :proc        =>  Proc.new {|key| Chef::Config[:knife][:opc_username] = key}
+             :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_username] = key }
           option :id_domain,
              :short       => '-i',
              :long        => '--id_domain ID_DOMAIN',
              :description => 'OPC id domain',
-             :proc        =>  Proc.new {|key| Chef::Config[:knife][:opc_id_domain] = key} 
+             :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_id_domain] = key }
           option :passwd,
              :short       => '-p',
              :long        => '--passwd PASS',
@@ -37,15 +37,16 @@ class Chef
             :short => '-r RUN_LIST',
             :long => '--run-list RUN_LIST',
             :description => 'Comma separated list of roles/recipes to apply',
-            :proc => lambda { |o| o.split(/[\s,]+/) }
+            :proc => lambda { |o| o.split(/[\s,]+/) },
+            :default => []
           option :bootstrap_version,
-            :long => "--bootstrap-version VERSION",
-            :description => "The version of Chef to install",
+            :long => '--bootstrap-version VERSION',
+            :description => 'The version of Chef to install',
             :proc => lambda { |v| Chef::Config[:knife][:bootstrap_version] = v }
           option :identity_file,
             :long        => '--identity-file IDENTITY_FILE',
             :description => 'The SSH identity file used for authentication',
-            :proc        =>  Proc.new {|key| Chef::Config[:knife][:opc_ssh_identity_file] = key}
+            :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_ssh_identity_file] = key }
           option :ssh_user,
            :short       => '-x USERNAME',
            :long        => '--ssh-user USERNAME',
@@ -61,17 +62,16 @@ class Chef
 
       def validate!(keys = [:opc_id_domain, :opc_username])
         errors = []
-
         keys.each do |k|
           if locate_config_value(k).nil?
             errors << "You did not provide a valid '#{k}' value. " \
                       "Please set knife[:#{k}] in your knife.rb or pass as an option."
-         end
+          end
         end
-
         exit 1 if errors.each { |e| ui.error(e) }.any?
-      end
-      def bootstrap_for_linux_node(ssh_host)
+      end # end of validate!
+
+      def bootstrap_for_linux_node(ssh_host) # rubocop:disable Metrics/AbcSize
         bootstrap = Chef::Knife::Bootstrap.new
         bootstrap.name_args = ssh_host
         puts ssh_host
@@ -86,7 +86,7 @@ class Chef
         bootstrap_common_params(bootstrap)
       end # end bootstrap
 
-      def bootstrap_common_params(bootstrap)
+      def bootstrap_common_params(bootstrap) # rubocop:disable Metrics/AbcSize
         bootstrap.config[:run_list] = config[:run_list]
         bootstrap.config[:bootstrap_version] = locate_config_value(:bootstrap_version)
         bootstrap.config[:distro] = locate_config_value(:distro)
@@ -118,7 +118,7 @@ class Chef
         sleep 15
         bootstrap
       end # end of bootstap common
-      
+
       def destroy_item(klass, name, type_name)
         begin
           object = klass.load(name)
@@ -128,24 +128,19 @@ class Chef
           ui.warn("Could not find a #{type_name} named #{name} to delete!")
         end
       end
-      
-      def chef_delete
-         if config[:purge]
-           # puts 'in purge'
+
+      def chef_delete # rubocop:disable Metrics/AbcSize
+        if config[:purge]
           if config[:chef_node_name]
-            # puts 'in chef node name'
             thing_to_delete = config[:chef_node_name]
-            # puts thing_to_delete
-           # puts 'should of seen it'
           else
             thing_to_delete = config[:inst]
-           # puts 'in first else'
           end # end of chef_node_name if
           destroy_item(Chef::Node, thing_to_delete, 'node')
           destroy_item(Chef::ApiClient, thing_to_delete, 'client')
         else
           ui.warn("Corresponding node and client for the #{config[:inst]} server were not deleted
-           and remain registered with the Chef Server")
+          and remain registered with the Chef Server")
         end # end of purge if
         rescue NoMethodError
           ui.error("Could not locate server #{config[:inst]}.  Please verify it was provisioned ")

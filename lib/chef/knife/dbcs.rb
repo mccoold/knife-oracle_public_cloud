@@ -35,16 +35,16 @@ class Chef
          :description => 'The Chef node name for your new node',
          :proc        => Proc.new { |key| Chef::Config[:knife][:chef_node_name] = key }
 
-      def run
+      def run # rubocop:disable Metrics/AbcSize
         validate!
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)
         config[:identity_file] = locate_config_value(:opc_ssh_identity_file)
         attrcheck = {
-                     'create_json'     => config[:create_json],
-                     'ssh-user'        => config[:ssh_user],
-                     'identity-file'   => config[:identity_file]
-                    }
+          'create_json'     => config[:create_json],
+          'ssh-user'        => config[:ssh_user],
+          'identity-file'   => config[:identity_file]
+        }
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)
         file = File.read(config[:create_json])
@@ -79,10 +79,10 @@ class Chef
           bootstrap_for_linux_node(ssh_host).run
           print ui.color('the IP is ' + ssh_host, :green)
           puts ''
-        end # end of if   
+        end # end of if
       end # end of run
     end # end of create
-    
+
     class OpcDbcsList < Chef::Knife
       include Knife::OpcBase
       deps do
@@ -91,7 +91,7 @@ class Chef
       end # end of deps
       banner 'knife opc dbcs list (options)'
 
-      def run
+      def run # rubocop:disable Metrics/AbcSize
         validate!
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)
@@ -110,7 +110,7 @@ class Chef
         end # end of if
       end # end of run
     end # end of list
-    
+
     class OpcDbcsDelete < Knife
       # These two are needed for the '--purge' deletion case
       require 'chef/node'
@@ -151,13 +151,13 @@ class Chef
         end
       end
 
-      def run
+      def run # rubocop:disable Metrics/AbcSize
         validate!
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)
         config[:identity_file] = locate_config_value(:opc_ssh_identity_file)
         confirm('Do you really want to delete this DB server')
-        attrcheck = {'instance'  => config[:inst]}
+        attrcheck = { 'instance'  => config[:inst] }
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)
         deleteinst = InstDelete.new(config[:id_domain], config[:user_name], config[:passwd], 'dbcs')
