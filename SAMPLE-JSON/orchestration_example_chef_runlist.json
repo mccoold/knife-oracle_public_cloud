@@ -19,7 +19,15 @@
   }, {
     "objects": [{
       "instances": [{
-        
+        "attributes": {
+          "userdata": {
+            "chef": {
+              "run_list": [
+                "recipe[cron::default]"
+              ]
+            }
+          }
+        },
         "boot_order": [
           1
         ],
