@@ -17,12 +17,14 @@ class Chef
   class Knife
     require 'chef/knife/opc_base'
     require 'chef/knife/fmwbase'
+    require 'chef/knife/base_options'
+    require 'OPC'
     class OpcJcsCreate < Chef::Knife
       include Knife::OpcBase
       include Knife::FmwBase
+      include Knife::OpcOptions
       deps do
         require 'chef/json_compat'
-        require 'OPC'
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
       end # end of deps
@@ -50,6 +52,7 @@ class Chef
 
     class OpcJcsList < Chef::Knife
       include Knife::OpcBase
+      include Knife::OpcOptions
       deps do
         require 'chef/json_compat'
         require 'OPC'
@@ -82,6 +85,7 @@ class Chef
       require 'chef/api_client'
       include Knife::OpcBase
       include Knife::FmwBase
+      include Knife::OpcOptions
       banner 'knife opc jcs delete (options)'
 
       option :purge,

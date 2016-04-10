@@ -1,10 +1,9 @@
 class Chef
   require 'opc_client'
-
   class Knife
     module FmwBase
       def fmw_create(config, service) # rubocop:disable Metrics/AbcSize
-        attrcheck = { 
+        attrcheck = {
           'create_json'     => config[:create_json],
           'ssh-user'        => config[:ssh_user],
           'identity file'   => config[:identity_file],
@@ -44,6 +43,7 @@ class Chef
           ssh_host = result['content_url']
           ssh_host.delete! 'http://'
           bootstrap_for_linux_node(ssh_host).run
+          node_attributes(ssh_host, service)
         end # end of if
       end # end of fmw_create
 

@@ -15,10 +15,12 @@
 #
 class Chef
   class Knife
+    require 'chef/knife/opc_base'
+    require 'chef/knife/base_options'
+    require 'OPC'
     class OpcDbcsCreate < Chef::Knife
-      require 'chef/knife/opc_base'
-      require 'OPC'
       include Knife::OpcBase
+      include Knife::OpcOptions
       deps do
         require 'chef/json_compat'
         require 'chef/knife/bootstrap'
@@ -43,7 +45,8 @@ class Chef
         attrcheck = {
           'create_json'     => config[:create_json],
           'ssh-user'        => config[:ssh_user],
-          'identity-file'   => config[:identity_file]
+          'identity-file'   => config[:identity_file],
+          'chef node name'  => config[:chef_node_name]
         }
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)
@@ -77,6 +80,7 @@ class Chef
           ssh_host.delete! 'https://'
           ssh_host.slice!('4848')
           bootstrap_for_linux_node(ssh_host).run
+          node_attributes(ssh_host, 'PaaS DBCS')
           print ui.color('the IP is ' + ssh_host, :green)
           puts ''
         end # end of if
@@ -85,9 +89,9 @@ class Chef
 
     class OpcDbcsList < Chef::Knife
       include Knife::OpcBase
+      include Knife::OpcOptions
       deps do
         require 'chef/json_compat'
-        require 'OPC'
       end # end of deps
       banner 'knife opc dbcs list (options)'
 
@@ -116,6 +120,7 @@ class Chef
       require 'chef/node'
       require 'chef/api_client'
       include Knife::OpcBase
+      include Knife::OpcOptions
       banner 'knife opc dbcs delete (options)'
 
       option :purge,
@@ -166,13 +171,12 @@ class Chef
         deleteinst = JSON.pretty_generate(deleteinst)
         print ui.color(deleteinst, :yellow)
         puts ''
-        ui.warn("Deleted server #{config[:inst]}")
+        ui.warn("Deleted server #{config[:inst]} from OPC")
         if config[:purge]
           if config[:chef_node_name]
             thing_to_delete = config[:chef_node_name]
           else
             thing_to_delete = config[:inst]
-            puts 'in else'
           end # end of chef_node_name if
           destroy_item(Chef::Node, thing_to_delete, 'node')
           destroy_item(Chef::ApiClient, thing_to_delete, 'client')

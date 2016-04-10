@@ -34,3 +34,27 @@ The following parameters can be set in the knife.rb file
   * knife[:opc_username] = '<value>'
   * knife[:opc_rest_endpoint] = '<value>'
   * knife[:opc_ssh_identity_file] = "<value>"
+
+
+# Defining your Chef runlist via JSON
+
+Under the instances section of your launchplan you can now add Chef configuration:  runlists and roles.  You can define more than one instance in your launchplan and define a unique run list, environment, and tags for each instance.
+_Requires 0.1.1 or above_
+
+     "instances": [
+      {
+        "attributes": {
+          "userdata": {
+            "chef": {
+              "run_list": [
+                "recipe[cron::default]",
+                "recipe[Hudson]"
+              ],
+              "environment" : "demo",
+              "tags" : [
+                         "tag1",
+                         "tag2"
+                       ]
+            }
+          }
+        },

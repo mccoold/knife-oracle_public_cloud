@@ -12,21 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-require 'chef/knife/opc_base'
-require 'chef/knife/util'
-require 'OPC'
-require 'opc_client'
+
 class Chef
   class Knife
     class OpcOrchestration < Chef::Knife
+      require 'chef/knife/opc_base'
+      require 'chef/knife/util'
+      require 'OPC'
+      require 'opc_client'
+      require 'chef/node'
+      require 'chef/knife/base_options'
+      include Knife::OpcOptions
       include Knife::OpcBase
       include Knife::OrchJson
       deps do
         require 'chef/json_compat'
         require 'chef/knife/bootstrap'
-
         Chef::Knife::Bootstrap.load_deps
       end # end of deps
+      
       banner 'knife opc orchestration (options)'
       option :create_json,
          :short       => '-j',
@@ -91,19 +95,34 @@ class Chef
           instance_data = orch_json_parse(orch.manage) if config[:action] == 'start'
           instanceconfig = Instance.new(config[:id_domain], config[:user_name], config[:passwd], config[:rest_endpoint])
           instance_data.each do |instance|
-            config[:run_list] = instance['runlist'] unless  instance['runlist'].nil? # !config[:run_list].empty?
-            instance_name = instance['name']
-            instance_IP = instanceconfig.list_ip(instance_name)
+            instance_IP = instanceconfig.list_ip(instance['name'])
             ssh_host = instance_IP[1] if config[:ip_access] == 'public'
             ssh_host = instance_IP[0] if config[:ip_access] == 'private'
-            Chef::Config[:knife][:chef_node_name] = instance['label']
-            config[:chef_node_name] = instance['label']
-            print ui.color(orch.manage, :green) if config[:action] == 'stop'
+            chef_node_configuration(instance)
+            puts config[:chef_node_name]
             chef_delete if config[:action] == 'stop'
+            sleep 30 if config[:action] == 'start'
             bootstrap_for_linux_node(ssh_host).run if config[:action] == 'start'
+            node = Chef::Node.load(config[:chef_node_name]) unless instance['chefenvironment'].nil? || config[:action] == 'stop'
+            node.chef_environment = Chef::Config[:knife][:environment] unless instance['chefenvironment'].nil? || config[:action] == 'stop'
+            node.normal_attrs = { 'cloud' => { 'Note' => 'ignore this attribute, its wrong an Ohai bug' },
+                                  'Cloud' => { 'provider' => 'Oracle Public Cloud', 'Service' => 'Compute',
+                                               'public_ips' => ssh_host, 'private_ips' => instance_IP[0],
+                                               'ID_DOMAIN' => config[:id_domain] } }  unless config[:action] == 'stop'
+            node.save unless instance['chefenvironment'].nil? || config[:action] == 'stop'
           end # end of loop
+          print ui.color(orch.manage, :yellow) if config[:action] == 'stop'
         end # end of case
       end # end of run
+
+      def chef_node_configuration(instance) # rubocop:disable Metrics/AbcSize
+        Chef::Config[:knife][:environment] = instance['chefenvironment'] unless instance['chefenvironment'].nil?
+        config[:environment] = Chef::Config[:knife][:environment] unless instance['chefenvironment'].nil?
+        Chef::Config[:knife][:chef_node_name] = instance['label']
+        config[:chef_node_name] = instance['label']
+        config[:run_list] = instance['runlist'] unless  instance['runlist'].nil?
+        config[:tags] = instance['tags'] unless instance['tags'].nil?
+      end
     end # end of orch
   end # end of knife
 end # end of chef

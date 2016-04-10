@@ -16,8 +16,10 @@
 class Chef
   require 'chef/knife/opc_base'
   require 'OPC'
+  require 'chef/knife/base_options'
   class Knife
     class OpcComputeInstanceList < Chef::Knife
+      include Knife::OpcOptions
       include Knife::OpcBase
       deps do
         require 'chef/json_compat'
@@ -40,6 +42,7 @@ class Chef
 
     class OpcComputeInstanceDelete < Chef::Knife
       include Knife::OpcBase
+      include Knife::OpcOptions
       deps do
         require 'chef/json_compat'
         require 'chef/knife/bootstrap'

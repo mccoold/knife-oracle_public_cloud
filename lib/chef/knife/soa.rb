@@ -17,12 +17,14 @@ class Chef
   class Knife
     require 'chef/knife/opc_base'
     require 'chef/knife/fmwbase'
+    require 'chef/knife/base_options'
+    require 'OPC'
     class OpcSoaCreate < Chef::Knife
       include Knife::OpcBase
       include Knife::FmwBase
+      include Knife::OpcOptions
       deps do
         require 'chef/json_compat'
-        require 'OPC'
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
       end # end of deps
@@ -38,7 +40,7 @@ class Chef
          :long        => '--node-name NAME',
          :description => 'The Chef node name for your new node',
          :proc        => Proc.new { |key| Chef::Config[:knife][:chef_node_name] = key }
-       
+
       def run
         validate!
         config[:id_domain] = locate_config_value(:opc_id_domain)
@@ -47,20 +49,19 @@ class Chef
         fmw_create(config, 'soa')
       end # end of run
     end # end of create
-    
+
     class OpcSoaDelete < Chef::Knife
       include Knife::OpcBase
       include Knife::FmwBase
+      include Knife::OpcOptions
       deps do
         require 'chef/json_compat'
-        require 'OPC'
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
       end # end of deps
 
       banner 'knife opc soa delete (options)'
 
-      
       option :purge,
         :long        => '--purge',
         :boolean     => true,
@@ -73,28 +74,24 @@ class Chef
         :long        => '--node-name NAME',
         :description => 'The name of the node and client to delete, if it differs from the server name.
                          Only has meaning when used with the --purge option.'
-
       option :dbaname,
         :long         => '--dbaname DBANAME',
         :default      => 'sys',
         :description  => 'DBA user ID for the DB that Weblogic is connected too'
-
       option :dbapass,
         :long         => '--dbapass DBAPASS',
         :default      => 'sys',
         :description  => 'DBA user password for the DB that Weblogic is connected too'
-
       option :forcedelete,
         :long         => '--soaforce',
         :boolean     => true,
         :default     => true,
         :description  => 'force delete of the SOA Instance'
-
       option :inst,
         :short        => '-I INST',
         :long         => '--instance INST',
         :description  => 'force delete of the SOA Instance'
-       
+
       def run
         validate!
         config[:id_domain] = locate_config_value(:opc_id_domain)

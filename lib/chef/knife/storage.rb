@@ -13,11 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-require 'chef/knife/opc_base'
 class Chef
   class Knife
+    require 'chef/knife/opc_base'
+    require 'chef/knife/base_options'
     class OpcObjectstorageDelete < Chef::Knife
       include Knife::OpcBase
+      include Knife::OpcOptions
       deps do
         require 'chef/json_compat'
         require 'OPC'
@@ -27,7 +29,7 @@ class Chef
          :long        => '--container CONTAINER',
          :description => 'storage container name'
 
-      def run
+      def run # rubocop:disable Metrics/AbcSize
         attrcheck = { 'Container' => config[:container] }
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)
@@ -47,6 +49,7 @@ class Chef
     
     class OpcObjectstorageCreate < Chef::Knife
       include Knife::OpcBase
+      include Knife::OpcOptions
       deps do
         require 'chef/json_compat'
         require 'OPC'

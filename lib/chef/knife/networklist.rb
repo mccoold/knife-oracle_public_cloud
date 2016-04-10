@@ -15,17 +15,18 @@
 #
 
 class Chef
-  require 'chef/knife/opc_base'
-  require 'OPC'
-  require 'opc_client'
-  
   class Knife
+    require 'chef/knife/opc_base'
+    require 'OPC'
+    require 'opc_client'
+    require 'chef/knife/base_options'
     class OpcNetworkList < Chef::Knife
       include Knife::OpcBase
+      include Knife::OpcOptions
+      require 'chef/knife/base_options'
       deps do
         require 'chef/json_compat'
         require 'chef/knife/bootstrap'
-        
         Chef::Knife::Bootstrap.load_deps
       end # end of deps
       banner 'knife opc network list (options)'
@@ -33,7 +34,7 @@ class Chef
          :short       => '-R',
          :long        => '--rest_endpoint REST_ENDPOINT',
          :description => 'Rest end point for compute',
-         :proc        =>  Proc.new {|key| Chef::Config[:knife][:opc_rest_endpoint] = key}
+         :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_rest_endpoint] = key }
       option :action,
          :short       => '-A',
          :long        => '--action ACTION',
@@ -46,16 +47,16 @@ class Chef
          :long        => '--container CONTAINER',
          :description => 'container name'
 
-    def run
-      attrcheck = {
-                   'Action'          => config[:action],
-                   'Rest End Point'  => config[:rest_endpoint],
-                   'Container'       => config[:container],
-                   'Function'        => config[:function] 
-                  }
-      @validate = Validator.new
-      @validate.attrvalidate(config, attrcheck)
-      case config[:function]
+      def run # rubocop:disable Metrics/AbcSize
+        attrcheck = {
+          'Action'          => config[:action],
+          'Rest End Point'  => config[:rest_endpoint],
+          'Container'       => config[:container],
+          'Function'        => config[:function]
+        }
+        @validate = Validator.new
+        @validate.attrvalidate(config, attrcheck)
+        case config[:function]
         when 'seclist'
           seclistc = SecListClient.new
           seclistc.list(config)

@@ -6,24 +6,25 @@ class Chef
         instances = Array.new
         json_data = JSON.parse(config_data)
         plan = json_data['oplans']
-       
         plan.each do |op|
           if op['obj_type'] == "launchplan"
              obj = op['objects']
              obj = obj.at(0)
-             inst = obj['instances'].at(0)
-             label = inst['label']
-             name = inst['name']
-             puts inst.dig('attributes', 'userdata', 'chef', 'run_list')
-             chefrunlist = inst.dig('attributes', 'userdata', 'chef', 'run_list')
-             puts chefrunlist
-             launchplan = { 'label' => label, 'name' => name }
-             launchplan['runlist'] = chefrunlist unless chefrunlist.nil?
-             puts launchplan['runlist']
-             instances.insert(-1, launchplan)
+             allinstances = obj['instances']
+             allinstances.each do |inst|
+               label = inst['label']
+               name = inst['name']
+               chefrunlist = inst.dig('attributes', 'userdata', 'chef', 'run_list')
+               chefenvironment = inst.dig('attributes', 'userdata', 'chef', 'environment')
+               tags = inst.dig('attributes', 'userdata', 'chef', 'tags')
+               launchplan = { 'label' => label, 'name' => name }
+               launchplan['runlist'] = chefrunlist unless chefrunlist.nil?
+               launchplan['chefenvironment'] = chefenvironment unless chefenvironment.nil?
+               launchplan['tags'] = chefrunlist unless tags.nil?
+               instances.insert(-1, launchplan)
+             end # end of inside loop
            end # end of if
-         end # end of loop
-        # config[:run_list] = chefdata   # if config[:run_list].empty? && !chefdata.nil?
+         end # end of outside loop
          return instances
        end # end of method
      end
