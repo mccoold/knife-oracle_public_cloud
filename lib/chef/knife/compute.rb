@@ -34,7 +34,11 @@ class Chef
          :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_rest_endpoint] = key }
 
       def run # rubocop:disable Metrics/AbcSize
+        config[:id_domain] = locate_config_value(:opc_id_domain)
+        config[:user_name] = locate_config_value(:opc_username)
+        config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
         compute = ComputeClient.new
+        compute.util = Utilities.new
         compute.options = config
         instance = compute.list
       end # end of run
@@ -57,10 +61,51 @@ class Chef
          :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_rest_endpoint] = key }
 
       def run
+        config[:id_domain] = locate_config_value(:opc_id_domain)
+        config[:user_name] = locate_config_value(:opc_username)
+        config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
         compute = ComputeClient.new
         compute.options = config
+        compute.util = Utilities.new
         instance = compute.delete
       end # end of run
     end # end of delete class
+    
+     class OpcComputeImagelistShow < Chef::Knife
+      include Knife::OpcOptions
+      include Knife::OpcBase
+      deps do
+        require 'chef/json_compat'
+        require 'chef/knife/bootstrap'
+        Chef::Knife::Bootstrap.load_deps
+      end # end of deps
+      banner 'knife opc compute imagelist show(options)'
+      option :rest_endpoint,
+         :short       => '-R',
+         :long        => '--rest_endpoint REST_ENDPOINT',
+         :description => 'Rest end point for compute',
+         :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_rest_endpoint] = key }
+      option :container,
+         :long        => '--container CONTAINER',
+         :description => 'container name for OPC IaaS Compute'
+
+      def run # rubocop:disable Metrics/AbcSize
+        config[:id_domain] = locate_config_value(:opc_id_domain)
+        config[:user_name] = locate_config_value(:opc_username)
+        config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
+        attrcheck = {
+          'Rest End Point'  => config[:rest_endpoint],
+          'Container'       => config[:container]
+        }
+        @validate = Validator.new
+        @validate.attrvalidate(config, attrcheck)
+        compute = ComputeClient.new
+        compute.validate = @validate
+        compute.util = Utilities.new
+        compute.options = config
+        instance = compute.image_list
+        print ui.color(instance, :green)
+      end # end of run
+    end # end of list class
   end # end of knife
 end # end of chef

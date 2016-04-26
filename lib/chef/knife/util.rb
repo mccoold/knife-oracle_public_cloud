@@ -17,10 +17,12 @@ class Chef
                chefrunlist = inst.dig('attributes', 'userdata', 'chef', 'run_list')
                chefenvironment = inst.dig('attributes', 'userdata', 'chef', 'environment')
                tags = inst.dig('attributes', 'userdata', 'chef', 'tags')
+               ssh_user = inst.dig('attributes', 'userdata', 'chef', 'ssh_user')
                launchplan = { 'label' => label, 'name' => name }
                launchplan['runlist'] = chefrunlist unless chefrunlist.nil?
                launchplan['chefenvironment'] = chefenvironment unless chefenvironment.nil?
-               launchplan['tags'] = chefrunlist unless tags.nil?
+               launchplan['tags'] = tags unless tags.nil?
+               launchplan['ssh_user'] = ssh_user unless ssh_user.nil?
                instances.insert(-1, launchplan)
              end # end of inside loop
            end # end of if

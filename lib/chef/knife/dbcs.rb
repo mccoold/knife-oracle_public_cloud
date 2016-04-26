@@ -126,7 +126,7 @@ class Chef
       option :purge,
         :long        => '--purge',
         :boolean     => true,
-        :default     => true,
+        :default     => false,
         :description => 'Destroy corresponding node and client on the Chef Server.
         Assumes node and client have the same name as the server (if not, add the --node-name option).'
 
@@ -141,26 +141,12 @@ class Chef
         :long         => '--instance INST',
         :description  => 'force delete of the JCS Instance'
 
-      # Extracted from Chef::Knife.delete_object, because it has a
-      # confirmation step built in... By specifying the '--purge'
-      # flag (and also explicitly confirming the server destruction!)
-      # the user is already making their intent known.  It is not
-      # necessary to make them confirm two more times.
-      def destroy_item(klass, name, type_name)
-        begin
-          object = klass.load(name)
-          object.destroy
-          ui.warn("Deleted #{type_name} #{name}")
-        rescue Net::HTTPServerException
-          ui.warn("Could not find a #{type_name} named #{name} to delete!")
-        end
-      end
-
       def run # rubocop:disable Metrics/AbcSize
         validate!
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)
         config[:identity_file] = locate_config_value(:opc_ssh_identity_file)
+        config[:purge] = locate_config_value(:purge)
         confirm('Do you really want to delete this DB server')
         attrcheck = { 'instance'  => config[:inst] }
         @validate = Validator.new

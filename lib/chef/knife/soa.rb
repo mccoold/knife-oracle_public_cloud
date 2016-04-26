@@ -97,6 +97,7 @@ class Chef
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)
         config[:identity_file] = locate_config_value(:opc_ssh_identity_file)
+        config[:purge] = locate_config_value(:purge)
         fmw_create(config, 'soa')
       end # end of run
     end # end of delete

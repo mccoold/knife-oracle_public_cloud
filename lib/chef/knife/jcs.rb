@@ -91,7 +91,7 @@ class Chef
       option :purge,
         :long        => '--purge',
         :boolean     => true,
-        :default     => true,
+        :default     => false,
         :description => 'Destroy corresponding node and client on the Chef Server.
         Assumes node and client have the same name as the server (if not, add the --node-name option).'
 
@@ -132,8 +132,11 @@ class Chef
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)
         config[:identity_file] = locate_config_value(:opc_ssh_identity_file)
+        config[:purge] = locate_config_value(:purge)
         confirm('Do you really want to delete this server')
-        attrcheck = { 'chef node name'  => config[:chef_node_name] }
+        attrcheck = { 'chef node name'  => config[:chef_node_name],
+                      'db password'     => config[:dbapass] 
+        }
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)
         data_hash = { 'dbaName' => config[:dbaname], 'dbaPassword' => config[:dbapass], 'forceDelete' => config[:forcedelete] }

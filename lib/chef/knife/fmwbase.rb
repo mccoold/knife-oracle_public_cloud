@@ -7,7 +7,8 @@ class Chef
           'create_json'     => config[:create_json],
           'ssh-user'        => config[:ssh_user],
           'identity file'   => config[:identity_file],
-          'run-list'        => config[:run_list]
+          'chef node name'  => config[:chef_node_name]
+          
         }
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)
@@ -19,10 +20,9 @@ class Chef
           print ui.color('Error with REST call, returned http code: ' + createcall.code + ' ', :red, :bold)
           print ui.color(createcall.body, :red)
         else
-          # res = JSON.parse(paas_create.create_status(createcall['location']))
           status_object = paas_create.create_status(createcall['location'])
           status_message =  status_object.body # have to break all the calls out for error
-          # handling REST end point tends not to be consistant
+          # handling REST end point, it tends not to be consistant
           status_message_status = JSON.parse(status_message) if status_object.code == '202'
           print ui.color('Provisioning the Cloud Asset ' + status_message_status['service_name'], :green)
           breakout = 1
@@ -33,7 +33,7 @@ class Chef
             status_message =  status_object.body
             status_message_status = JSON.parse(status_message) if status_object.code == '202' || status_object.code == '200'
             if status_object.code == '500'
-              breakkout++
+              breakkout+=
               abort('Rest calls failing 5 times ' + status_object.code) if breakout == 5
             end # end of if
           end # end of while
@@ -55,7 +55,7 @@ class Chef
         print ui.color(deleteinst, :yellow)
         puts ''
         ui.warn("Deleted instance #{config[:inst]}")
-        chef_delete
+        chef_delete if config[:purge]
       end # end of delete
     end # end of FmwBase
   end # end of knife

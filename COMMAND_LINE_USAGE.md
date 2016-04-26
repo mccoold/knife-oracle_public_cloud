@@ -4,7 +4,7 @@ This is the function tool set for the Oracle public cloud. This tool will allow 
 command line functions provisioning and maintaining cloud elements in the Oracle public cloud.
 
   * The gem handles both the IaaS and PaaS(JaaS, DBaaS) functinality
-  *     Version 0.1.0
+  *     Version 0.1.0 and above
 
 # Available Commands:
 
@@ -20,6 +20,7 @@ command line functions provisioning and maintaining cloud elements in the Oracle
 * knife opc objectstorage list -u _username_ -i _identity_domain_ -p _password_
    * for contents of the container: -C _containername_
 * knife opc compute instance list -u _username_ -i _identity_domain_ -p _password_ 
+* knife opc compute imagelist show  -u _username_ -i _identity_domain_ -p _password_    **Verison 1.2 and above
 * knife opc orchestration -A _start, stop, create, delete, list, details_  -u _username_ -i _identity_domain_ -p _password_ 
    * for start, stop, delete:  -C _containername_
    * for create: -j _json_ file
@@ -34,6 +35,7 @@ The following parameters can be set in the knife.rb file
   * knife[:opc_username] = '<value>'
   * knife[:opc_rest_endpoint] = '<value>'
   * knife[:opc_ssh_identity_file] = "<value>"
+  * knife[:purge] = true
 
 
 # Defining your Chef runlist via JSON

@@ -59,7 +59,7 @@ class Chef
       option :purge,
         :long        => '--purge',
         :boolean     => true,
-        :default     => true,
+        :default     => false,
         :description => 'Destroy corresponding node and client on the Chef Server.
         Assumes node and client have the same name as the server (if not, add the --node-name option).'
 
@@ -68,6 +68,7 @@ class Chef
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)
         config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
+        config[:purge] = locate_config_value(:purge)
         attrcheck = {
           'Action'          => config[:action],
           'Rest End Point'  => config[:rest_endpoint]
@@ -77,6 +78,7 @@ class Chef
         orch = OrchClient.new
         orch.options = config
         orch.orch = Orchestration.new(config[:id_domain], config[:user_name], config[:passwd], config[:rest_endpoint])
+        orch.util = Utilities.new
         case config[:action]
         when 'list', 'details'
           attrcheck = { 'container'  => config[:container] }
@@ -100,16 +102,11 @@ class Chef
             ssh_host = instance_IP[0] if config[:ip_access] == 'private'
             chef_node_configuration(instance)
             puts config[:chef_node_name]
-            chef_delete if config[:action] == 'stop'
-            sleep 30 if config[:action] == 'start'
+            chef_delete if config[:action] == 'stop' && config[:purge] == true
+            sleep 20 if config[:action] == 'start'
             bootstrap_for_linux_node(ssh_host).run if config[:action] == 'start'
-            node = Chef::Node.load(config[:chef_node_name]) unless instance['chefenvironment'].nil? || config[:action] == 'stop'
-            node.chef_environment = Chef::Config[:knife][:environment] unless instance['chefenvironment'].nil? || config[:action] == 'stop'
-            node.normal_attrs = { 'cloud' => { 'Note' => 'ignore this attribute, its wrong an Ohai bug' },
-                                  'Cloud' => { 'provider' => 'Oracle Public Cloud', 'Service' => 'Compute',
-                                               'public_ips' => ssh_host, 'private_ips' => instance_IP[0],
-                                               'ID_DOMAIN' => config[:id_domain] } }  unless config[:action] == 'stop'
-            node.save unless instance['chefenvironment'].nil? || config[:action] == 'stop'
+            instance['chefenvironment'] = '_default' if instance['chefenvironment'].nil?
+            node_update(ssh_host, instance_IP[0]) unless config[:action] == 'stop'
           end # end of loop
           print ui.color(orch.manage, :yellow) if config[:action] == 'stop'
         end # end of case
@@ -122,6 +119,20 @@ class Chef
         config[:chef_node_name] = instance['label']
         config[:run_list] = instance['runlist'] unless  instance['runlist'].nil?
         config[:tags] = instance['tags'] unless instance['tags'].nil?
+        config[:ssh_user] = instance['ssh_user'] unless instance['ssh_user'].nil?
+      end
+      
+      def node_update(ssh_host, private_ip)
+        node = Chef::Node.load(config[:chef_node_name]) unless config[:action] == 'stop'
+            node.chef_environment = Chef::Config[:knife][:environment] unless config[:action] == 'stop'
+            node.normal_attrs = { 'cloud' => { 'Note' => 'ignore this attribute, its wrong an Ohai bug' },
+                                  'Cloud' => { 'provider' => 'Oracle Public Cloud', 'Service' => 'Compute',
+                                               'public_ips' => ssh_host, 'private_ips' => private_ip,
+                                               'ID_DOMAIN' => config[:id_domain] } }  unless config[:action] == 'stop'
+            config[:tags].each do |tag|
+              node.tags << tag
+            end
+            node.save unless config[:action] == 'stop'
       end
     end # end of orch
   end # end of knife
