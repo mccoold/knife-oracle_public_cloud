@@ -67,6 +67,29 @@ class Chef
             :long => '--secret-file SECRET_FILE',
             :description => 'A file containing the secret key to use to encrypt data bag item values',
             :proc => lambda { |sf| Chef::Config[:knife][:secret_file] = sf }
+          option :first_boot_attributes,
+            :long => "--json-attributes",
+            :description => "A JSON string to be added to the first run of chef-client",
+            :proc => lambda { |o| Chef::JSONCompat.parse(o) },
+            :default => {}
+          option :bootstrap_url,
+            :long        => "--bootstrap-url URL",
+            :description => "URL to a custom installation script",
+            :proc        => Proc.new { |u| Chef::Config[:knife][:bootstrap_url] = u }
+          option :bootstrap_install_command,
+            :long        => "--bootstrap-install-command COMMANDS",
+            :description => "Custom command to install chef-client",
+            :proc        => Proc.new { |ic| Chef::Config[:knife][:bootstrap_install_command] = ic }
+    
+          option :bootstrap_wget_options,
+            :long        => "--bootstrap-wget-options OPTIONS",
+            :description => "Add options to wget when installing chef-client",
+            :proc        => Proc.new { |wo| Chef::Config[:knife][:bootstrap_wget_options] = wo }
+    
+          option :bootstrap_curl_options,
+            :long        => "--bootstrap-curl-options OPTIONS",
+            :description => "Add options to curl when install chef-client",
+            :proc        => Proc.new { |co| Chef::Config[:knife][:bootstrap_curl_options] = co }
         end # end of includer
       end # end of included
     end

@@ -18,6 +18,7 @@ class Chef
     require 'chef/knife/opc_base'
     require 'chef/knife/base_options'
     require 'OPC'
+    require 'opc_client'
     class OpcDbcsCreate < Chef::Knife
       include Knife::OpcBase
       include Knife::OpcOptions
@@ -28,14 +29,16 @@ class Chef
       end # end of deps
       banner 'knife opc dbcs create (options)'
       option :create_json,
-         :short       => '-j',
-         :long        => '--create_json JSON',
-         :description => 'json file to describe server'
+        :long        => '--create_json JSON',
+        :description => 'json file to describe OPC DBCS Instance'
+      option :json_attributes,
+        :long        => '--json-attributes JSON_ATTRIBS',
+        :description => 'A JSON string that is added to the first run of a chef-client'
       option :chef_node_name,
-         :short       => '-N NAME',
-         :long        => '--node-name NAME',
-         :description => 'The Chef node name for your new node',
-         :proc        => Proc.new { |key| Chef::Config[:knife][:chef_node_name] = key }
+        :short       => '-N NAME',
+        :long        => '--node-name NAME',
+        :description => 'The Chef node name for your new node',
+        :proc        => Proc.new { |key| Chef::Config[:knife][:chef_node_name] = key }
 
       def run # rubocop:disable Metrics/AbcSize
         validate!
@@ -76,9 +79,10 @@ class Chef
           result = SrvList.new(config[:id_domain], config[:user_name], config[:passwd], 'dbcs')
           result = result.inst_list(res['service_name'])
           result = JSON.parse(result.body)
-          ssh_host = result['glassfish_url']
+          ssh_host = result['em_url']
           ssh_host.delete! 'https://'
-          ssh_host.slice!('4848')
+          ssh_host.chomp!('em')
+          ssh_host.chomp!('5500')
           bootstrap_for_linux_node(ssh_host).run
           node_attributes(ssh_host, 'PaaS DBCS')
           print ui.color('the IP is ' + ssh_host, :green)
@@ -143,35 +147,23 @@ class Chef
 
       def run # rubocop:disable Metrics/AbcSize
         validate!
+        @util = Utilities.new
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)
         config[:identity_file] = locate_config_value(:opc_ssh_identity_file)
         config[:purge] = locate_config_value(:purge)
         confirm('Do you really want to delete this DB server')
-        attrcheck = { 'instance'  => config[:inst] }
+        attrcheck = { 'instance'  => config[:inst],
+                      'chef node name'  => config[:chef_node_name]
+        }
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)
         deleteinst = InstDelete.new(config[:id_domain], config[:user_name], config[:passwd], 'dbcs')
         deleteinst = deleteinst.delete(nil, config[:inst])
+        @util.response_handler(deleteinst)
         deleteinst = JSON.parse(deleteinst.body)
         deleteinst = JSON.pretty_generate(deleteinst)
-        print ui.color(deleteinst, :yellow)
-        puts ''
-        ui.warn("Deleted server #{config[:inst]} from OPC")
-        if config[:purge]
-          if config[:chef_node_name]
-            thing_to_delete = config[:chef_node_name]
-          else
-            thing_to_delete = config[:inst]
-          end # end of chef_node_name if
-          destroy_item(Chef::Node, thing_to_delete, 'node')
-          destroy_item(Chef::ApiClient, thing_to_delete, 'client')
-        else
-          ui.warn("Corresponding node and client for the #{config[:inst]} server were not deleted
-          and remain registered with the Chef Server")
-        end # end of purge if
-        rescue NoMethodError
-          ui.error("Could not locate server #{config[:inst]}.  Please verify it was provisioned ")
+        chef_delete
       end # end of method run
 
       def query

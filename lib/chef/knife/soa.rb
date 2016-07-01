@@ -34,7 +34,10 @@ class Chef
       option :create_json,
          :short       => '-j',
          :long        => '--create_json JSON',
-         :description => 'json file to describe server'
+         :description => 'json file to describe OPC Instance'
+      option :json_attributes,
+         :long        => '--json-attributes JSON_ATTRIBS',
+         :description => 'A JSON string that is added to the first run of a chef-client'
       option :chef_node_name,
          :short       => '-N NAME',
          :long        => '--node-name NAME',

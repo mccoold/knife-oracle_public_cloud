@@ -16,7 +16,6 @@
 require 'chef/knife'
 class Chef
   class Knife
-    
     module OpcBase
       def locate_config_value(key)
         key = key.to_sym

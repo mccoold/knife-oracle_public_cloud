@@ -53,6 +53,7 @@ _Requires 0.1.1 or above_
                 "recipe[Hudson]"
               ],
               "environment" : "demo",
+              "ssh_user" : <value>
               "tags" : [
                          "tag1",
                          "tag2"
@@ -60,3 +61,4 @@ _Requires 0.1.1 or above_
             }
           }
         },
+

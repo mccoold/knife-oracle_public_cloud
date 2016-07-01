@@ -29,7 +29,6 @@ class Chef
       end # end of deps
       banner 'knife opc network (options)'
       option :create_json,
-         :short       => '-j',
          :long        => '--create_json JSON',
          :description => 'json file to describe server'
       option :rest_endpoint,

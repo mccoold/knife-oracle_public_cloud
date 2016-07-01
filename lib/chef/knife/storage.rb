@@ -30,6 +30,11 @@ class Chef
          :description => 'storage container name'
 
       def run # rubocop:disable Metrics/AbcSize
+        validate!
+        config[:id_domain] = locate_config_value(:opc_id_domain)
+        config[:user_name] = locate_config_value(:opc_username)
+        config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
+        config[:purge] = locate_config_value(:purge)
         attrcheck = { 'Container' => config[:container] }
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)
@@ -60,6 +65,11 @@ class Chef
          :description => 'storage container name'
 
       def run # rubocop:disable Metrics/AbcSize
+        validate!
+        config[:id_domain] = locate_config_value(:opc_id_domain)
+        config[:user_name] = locate_config_value(:opc_username)
+        config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
+        config[:purge] = locate_config_value(:purge)
         attrcheck = { 'Container' => config[:container] }
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)
@@ -76,6 +86,7 @@ class Chef
     
     class OpcObjectstorageList < Chef::Knife
       include Knife::OpcBase
+      include Knife::OpcOptions
       deps do
         require 'chef/json_compat'
         require 'OPC'
@@ -86,6 +97,11 @@ class Chef
          :description => 'storage container name'
 
       def run
+        validate!
+        config[:id_domain] = locate_config_value(:opc_id_domain)
+        config[:user_name] = locate_config_value(:opc_username)
+        config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
+        config[:purge] = locate_config_value(:purge)
         attrcheck = { 'Container' => config[:container] }
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)

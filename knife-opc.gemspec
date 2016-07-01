@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'knife-oracle_public_cloud'
-  s.version = '0.1.2'
+  s.version = '0.1.3'
   s.authors = ['Daryn McCool']
   s.date = Date.today.to_s
   s.description = 'knife plug-in for Oracle Public Cloud, for IaaS and PaaS cloud assets'

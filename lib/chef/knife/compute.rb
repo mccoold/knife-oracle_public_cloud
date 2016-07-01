@@ -39,8 +39,9 @@ class Chef
         config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
         compute = ComputeClient.new
         compute.util = Utilities.new
+        compute.validate =  Validator.new
         compute.options = config
-        instance = compute.list
+        print ui.color(compute.list, :green)
       end # end of run
     end # end of list class
 
@@ -60,18 +61,19 @@ class Chef
          :description => 'Rest end point for compute',
          :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_rest_endpoint] = key }
 
-      def run
+      def run # rubocop:disable Metrics/AbcSize
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)
         config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
         compute = ComputeClient.new
         compute.options = config
+        compute.validate =  Validator.new
         compute.util = Utilities.new
-        instance = compute.delete
+        print ui.color(compute.delete, :red)
       end # end of run
     end # end of delete class
-    
-     class OpcComputeImagelistShow < Chef::Knife
+
+    class OpcComputeImagelistShow < Chef::Knife
       include Knife::OpcOptions
       include Knife::OpcBase
       deps do
@@ -106,6 +108,102 @@ class Chef
         instance = compute.image_list
         print ui.color(instance, :green)
       end # end of run
+    end # end of Imagelist class
+
+    class OpcComputeInstanceSnapshotShow < Chef::Knife
+      include Knife::OpcOptions
+      include Knife::OpcBase
+      deps do
+        require 'chef/json_compat'
+        require 'chef/knife/bootstrap'
+        Chef::Knife::Bootstrap.load_deps
+      end # end of deps
+      banner 'knife opc compute instance snapshot show (options)'
+      option :rest_endpoint,
+        :short       => '-R',
+        :long        => '--rest_endpoint REST_ENDPOINT',
+        :description => 'Rest end point for compute',
+        :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_rest_endpoint] = key }
+      option :container,
+        :long        => '--container CONTAINER',
+        :description => 'container name for OPC IaaS Compute'
+
+      def run # rubocop:disable Metrics/AbcSize
+        config[:id_domain] = locate_config_value(:opc_id_domain)
+        config[:user_name] = locate_config_value(:opc_username)
+        config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
+        compute = ComputeClient.new
+        compute.util = Utilities.new
+        compute.validate =  Validator.new
+        config[:function] = 'inst_snapshot'
+        compute.options = config
+        print ui.color(compute.list, :green)
+      end # end of run
     end # end of list class
+    
+    class OpcComputeInstanceSnapshotCreate < Chef::Knife
+      include Knife::OpcOptions
+      include Knife::OpcBase
+      deps do
+        require 'chef/json_compat'
+        require 'chef/knife/bootstrap'
+        Chef::Knife::Bootstrap.load_deps
+      end # end of deps
+      banner 'knife opc compute instance snapshot create (options)'
+      option :rest_endpoint,
+        :short       => '-R',
+        :long        => '--rest_endpoint REST_ENDPOINT',
+        :description => 'Rest end point for compute',
+        :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_rest_endpoint] = key }
+      option :container,
+        :long        => '--container CONTAINER',
+        :description => 'container name for OPC IaaS Compute'
+      option :inst,
+        :long        => '--imagelist IMAGELIST',
+        :description => 'imagelist name for snapshot'
+
+      def run # rubocop:disable Metrics/AbcSize
+        config[:id_domain] = locate_config_value(:opc_id_domain)
+        config[:user_name] = locate_config_value(:opc_username)
+        config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
+        compute = ComputeClient.new
+        compute.util = Utilities.new
+        compute.validate =  Validator.new
+        config[:function] = 'inst_snapshot'
+        compute.options = config
+        print ui.color(compute.create_snap, :green)
+      end # end of run
+    end # end of snap create class
+    
+    class OpcComputeInstanceSnapshotDelete < Chef::Knife
+      include Knife::OpcOptions
+      include Knife::OpcBase
+      deps do
+        require 'chef/json_compat'
+        require 'chef/knife/bootstrap'
+        Chef::Knife::Bootstrap.load_deps
+      end # end of deps
+      banner 'knife opc compute instance snapshot delete (options)'
+      option :rest_endpoint,
+        :short       => '-R',
+        :long        => '--rest_endpoint REST_ENDPOINT',
+        :description => 'Rest end point for compute',
+        :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_rest_endpoint] = key }
+      option :container,
+        :long        => '--container CONTAINER',
+        :description => 'container name for OPC IaaS Compute'
+
+      def run # rubocop:disable Metrics/AbcSize
+        config[:id_domain] = locate_config_value(:opc_id_domain)
+        config[:user_name] = locate_config_value(:opc_username)
+        config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
+        compute = ComputeClient.new
+        compute.util = Utilities.new
+        compute.validate =  Validator.new
+        config[:function] = 'inst_snapshot'
+        compute.options = config
+        print ui.color(compute.delete, :red)
+      end # end of run
+    end # end of snap delete class
   end # end of knife
 end # end of chef
