@@ -2,6 +2,7 @@ class Chef
   require 'opc_client'
   class Knife
     module OrchJson
+      # used to parse orchestration json
       def orch_json_parse(config_data) # rubocop:disable Metrics/AbcSize
         instances = Array.new
         json_data = JSON.parse(config_data)

@@ -11,7 +11,7 @@ and bootstrap them into chef with a single command.  The plug-in also creates st
 
 
 ### Version ###
-* 0.1.3
+* 0.1.6
 
 ### How do I install and configure? ###
 
@@ -38,25 +38,28 @@ and bootstrap them into chef with a single command.  The plug-in also creates st
 
 # Available Commands:
 
-* knife opc dbcs create: -u _username_ -i _identity_domain_ -p _password_ -j _JSON_file_  --identity-file _sshkeyfile_
+* knife opc dbcs create: -u _username_ -i _identity_domain_ -p _password_ --create_json _JSON_file_  --identity-file _sshkeyfile_
 * knife opc dbcs delete -u _username_ -i _identity_domain_ -p _password_ -I _Instance Service Name_
 * knife opc dbcs list -u _username_ -i _identity_domain_ -p _password_
-* knife opc jcs create -u _username_ -i _identity_domain_ -p _password_ -j _JSON_file_ --identity-file _sshkeyfile_
-* knife opc jcs delete -u _username_ -i _identity_domain_ -p _password_ -I _Instance Service Name_
+* knife opc jcs create -u _username_ -i _identity_domain_ -p _password_ --create_json _JSON_file_ --identity-file _sshkeyfile_ -N _chefnodename_
+* knife opc jcs delete -u _username_ -i _identity_domain_ -p _password_ -I _Instance Service Name_ -N _chefnodename_
 * knife opc jcs list -u _username_ -i _identity_domain_ -p _password_ 
 * knife opc network -u _username_ -i _identity_domain_ -p _password_  _see JSON Page for more details_
 * knife opc objectstorage create -u _username_ -i _identity_domain_ -p _password_ -C _containername_
 * knife opc objectstorage delete -u _username_ -i _identity_domain_ -p _password_ -C _containername_
 * knife opc objectstorage list -u _username_ -i _identity_domain_ -p _password_
-   * for contents of the container: -C _containername_
-* knife opc compute instance list -u _username_ -i _identity_domain_ -p _password_ 
-* knife opc compute imagelist show  -u _username_ -i _identity_domain_ -p _password_    **Verison 1.2 and above
-* knife opc orchestration -A _start, stop, create, delete, list, details_  -u _username_ -i _identity_domain_ -p _password_ 
+   * for contents of the container: --container _containername_
+* knife opc compute instance list -u _username_ -i _identity_domain_ -p _password_ -R _RESTURL_
+* knife opc orchestration -A _start, stop, create, delete, list, details_  -u _username_ -i _identity_domain_ -p _password_ -R _RESTURL_
    * for start, stop, delete:  -C _containername_
-   * for create: -j _json_ file
+   * for create: --create_json _json_ file
+* knife opc soa create -u _username_ -i _identity_domain_ -p _password_ --create_json _JSON_file_ --identity-file _sshkeyfile_ -N _chefnodename_
+* knife opc soa delete -u _username_ -i _identity_domain_ -p _password_ -I _Instance Service Name_ -N _chefnodename_
+* knife opc soa list -u _username_ -i _identity_domain_ -p _password_ 
 
 **Notes**
  * configuring Network can be done with orchestrations for accounts that have IaaS, for PaaS only accounts use the network command to define network rules.
+ * If using PaaS Services outside of the United States or OCM use --paas_rest_endpoint to specify the REST endpoint for your PaaS services.  (PaaS and Compute have different REST endpoints, thus the two different flags)
 
 # Knife.rb Settings:
  Some flags to can be skipped from the command line if pre configured in the knife.rb file
@@ -65,14 +68,12 @@ The following parameters can be set in the knife.rb file
   * knife[:opc_username] = '<value>'
   * knife[:opc_rest_endpoint] = '<value>'
   * knife[:opc_ssh_identity_file] = "<value>"
-  * knife[:purge] = true
+  * knife[:paas_rest_endpoint] = '<value>'
 
 
 # Defining your Chef runlist via JSON
 
-For Compute Orchestrations Chef can be configured via the orchestration JSON.  In the JSON under the instances section of your 
-launchplan add Chef configuration:  runlists, environment, tags, and roles.  You can define more than one instance in your launchplan and define
- a unique run list, environment, and tags for each instance.  The bootstrap process will run serially.
+Under the instances section of your launchplan you can now add Chef configuration:  runlists and roles.  You can define more than one instance in your launchplan and define a unique run list, environment, and tags for each instance.
 _Requires 0.1.1 or above_
 
      "instances": [
@@ -85,7 +86,6 @@ _Requires 0.1.1 or above_
                 "recipe[Hudson]"
               ],
               "environment" : "demo",
-              "ssh_user" : <value>
               "tags" : [
                          "tag1",
                          "tag2"
@@ -94,7 +94,6 @@ _Requires 0.1.1 or above_
           }
         },
 
-
 ## Orchestrations##
 
 How to work with orchestrations with this plug-in
@@ -102,6 +101,7 @@ How to work with orchestrations with this plug-in
 * knife opc orchestration -A delete  :  This command removes the orchestration from OPC but does not do anything with Chef 
 * knife opc orchestration -A start  : This command will start the orchestration, look for an launchplans in the orchestration, find all the described instances, grab the Chef information from user data and register all nodes during the start of the orchestration.
 * knife opc orchestration -A stop :  this command will stop the orchestration in OPC and remove all nodes from Chef server.
+* Nested orchestrations are supported with version 0.1.4 and above
 
 ## Proxy Setup ##
 To enable proxy servers create a file in your home directory called opcclientcfg.conf In the file define two properties proxy_addr and proxy_port

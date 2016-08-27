@@ -21,7 +21,7 @@ class Chef
     require 'opc_client'
     require 'chef/node'
     require 'chef/knife/base_options'
-      
+
     deps do
       require 'chef/json_compat'
       require 'chef/knife/bootstrap'
@@ -60,26 +60,22 @@ class Chef
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)
         sshkeyconfig = SshkeyClient.new
-        print ui.color(sshkeyconfig.update(config), :green) if config[:action]  == 'create'
-        print ui.color(sshkeyconfig.update(config), :red) if config[:action]  == 'delete'
+        print ui.color(sshkeyconfig.update(config), :green) if config[:action] == 'create'
+        print ui.color(sshkeyconfig.update(config), :red) if config[:action] == 'delete'
       end # end of run
     end # end of update
 
-    class OpcSshkeyShow < Chef::Knife
+    class OpcSshkeyList < Chef::Knife
       include Knife::OpcOptions
       include Knife::OpcBase
       require 'opc_client'
-      banner 'knife opc sshkey show (options)'
+      banner 'knife opc sshkey list (options)'
 
       option :rest_endpoint,
         :short       => '-R',
         :long        => '--rest_endpoint REST_ENDPOINT',
         :description => 'Rest end point for OPC IaaS Compute',
         :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_rest_endpoint] = key }
-      option :action,
-        :short       => '-A',
-        :long        => '--action ACTION',
-        :description => 'action options list or details'
       option :container,
         :long        => '--container CONTAINER',
         :description => 'container name for OPC IaaS Compute'
@@ -91,11 +87,11 @@ class Chef
         config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
         config[:purge] = locate_config_value(:purge)
         attrcheck = {
-          'Action'          => config[:action],
           'Rest End Point'  => config[:rest_endpoint]
         }
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)
+        config[:action] = 'list'
         sshkeyconfig = SshkeyClient.new
         print ui.color(sshkeyconfig.list(config), :green)
       end # end of run

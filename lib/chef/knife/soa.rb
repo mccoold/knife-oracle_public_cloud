@@ -43,15 +43,61 @@ class Chef
          :long        => '--node-name NAME',
          :description => 'The Chef node name for your new node',
          :proc        => Proc.new { |key| Chef::Config[:knife][:chef_node_name] = key }
+      option :paas_rest_endpoint,
+        :long         => '--paas_rest_endpoint PAASREST',
+        :description  => 'REST end point for PaaS services not in the US'
 
       def run
         validate!
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)
         config[:identity_file] = locate_config_value(:opc_ssh_identity_file)
+        config[:paas_rest_endpoint] = locate_config_value(:paas_rest_endpoint)
         fmw_create(config, 'soa')
       end # end of run
     end # end of create
+
+class OpcSoaList < Chef::Knife
+      include Knife::OpcBase
+      include Knife::OpcOptions
+      deps do
+        require 'chef/json_compat'
+        require 'OPC'
+      end # end of deps
+      banner 'knife opc soa list (options)'
+      option :inst,
+        :short        => '-I INST',
+        :long         => '--instance INST',
+        :description  => 'force delete of the JCS Instance'
+      option :paas_rest_endpoint,
+        :long         => '--paas_rest_endpoint PAASREST',
+        :description  => 'REST end point for PaaS services not in the US'
+
+      def run # rubocop:disable Metrics/AbcSize
+        validate!
+        # loading values from knife.rb
+        config[:id_domain] = locate_config_value(:opc_id_domain)
+        config[:user_name] = locate_config_value(:opc_username)
+        config[:paas_rest_endpoint] = locate_config_value(:paas_rest_endpoint)
+        # even with attcheck nil, method attrvalidate still checks for user, pass, iddomain
+        attrcheck = nil
+        @validate = Validator.new
+        @validate.attrvalidate(config, attrcheck)
+        # for values passed in for PaaS REST end point
+        config[:paas_rest_endpoint] = paas_url(config[:paas_rest_endpoint], 'soa') if config[:paas_rest_endpoint]
+        result = SrvList.new(config[:id_domain], config[:user_name], config[:passwd], 'soa')
+        result.url = config[:paas_rest_endpoint] if config[:paas_rest_endpoint]
+        result = result.service_list unless config[:inst]
+        result = result.inst_list(config[:inst]) if config[:inst]
+        if result.code == '401' || result.code == '400' || result.code == '404' || result.code == '500'
+          print ui.color('Error with REST call, returned http code: ' + result.code + ' ', :red, :bold)
+          print ui.color(result.body, :red)
+        else
+          print ui.color(JSON.pretty_generate(JSON.parse(result.body)), :green)
+          puts ''
+        end # end of if
+      end # end of run
+    end # end of list
 
     class OpcSoaDelete < Chef::Knife
       include Knife::OpcBase
@@ -94,14 +140,29 @@ class Chef
         :short        => '-I INST',
         :long         => '--instance INST',
         :description  => 'force delete of the SOA Instance'
+      option :paas_rest_endpoint,
+        :long         => '--paas_rest_endpoint PAASREST',
+        :description  => 'REST end point for PaaS services not in the US'
 
       def run
         validate!
+        # checking my knife.rb for values
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)
         config[:identity_file] = locate_config_value(:opc_ssh_identity_file)
         config[:purge] = locate_config_value(:purge)
-        fmw_create(config, 'soa')
+        config[:paas_rest_endpoint] = locate_config_value(:paas_rest_endpoint)
+        confirm('Do you really want to delete this server')
+        attrcheck = { 'chef node name'  => config[:chef_node_name],
+                      'db password'     => config[:dbapass]
+        }
+        @validate = Validator.new
+        @validate.attrvalidate(config, attrcheck)
+        data_hash = { 'dbaName' => config[:dbaname], 'dbaPassword' => config[:dbapass], 'forceDelete' => config[:forcedelete] }
+        data_hash.to_json
+        puts data_hash
+        puts config[:inst]
+        fmw_delete(data_hash, 'soa')
       end # end of run
     end # end of delete
   end # end of knife

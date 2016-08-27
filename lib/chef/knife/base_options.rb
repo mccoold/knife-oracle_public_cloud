@@ -90,6 +90,20 @@ class Chef
             :long        => "--bootstrap-curl-options OPTIONS",
             :description => "Add options to curl when install chef-client",
             :proc        => Proc.new { |co| Chef::Config[:knife][:bootstrap_curl_options] = co }
+          option :node_ssl_verify_mode,
+            :long        => "--node-ssl-verify-mode [peer|none]",
+            :description => "Whether or not to verify the SSL cert for all HTTPS requests.",
+            :proc        => Proc.new { |v|
+              valid_values = %w{none peer}
+              unless valid_values.include?(v)
+              raise "Invalid value '#{v}' for --node-ssl-verify-mode. Valid values are: #{valid_values.join(", ")}"
+            end
+              v
+            }
+          option :node_verify_api_cert,
+            :long        => "--[no-]node-verify-api-cert",
+            :description => "Verify the SSL cert for HTTPS requests to the Chef server API.",
+            :boolean => false
         end # end of includer
       end # end of included
     end

@@ -115,6 +115,13 @@ class Chef
                                            'public_ips' => ssh_host, 'ID_DOMAIN' => config[:id_domain] } }
         node.save
       end
+
+      def paas_url(restendpoint, service) # rubocop:disable Metrics/AbcSize
+        full_url = restendpoint + '/paas/service/jcs/api/v1.1/instances/' + config[:id_domain] if service == 'jcs'
+        full_url = restendpoint + '/paas/service/dbcs/api/v1.1/instances/' + config[:id_domain] if service == 'dbcs'
+        full_url = restendpoint + '/paas/service/soa/api/v1.1/instances/' + config[:id_domain] if service == 'soa'
+        return full_url
+      end
     end # end of OpcBase
   end # end of knife
 end # end of class chef

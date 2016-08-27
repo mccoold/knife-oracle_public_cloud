@@ -51,7 +51,7 @@ class Chef
         end # end of if
       end # end of run
     end # end of delete
-    
+
     class OpcObjectstorageCreate < Chef::Knife
       include Knife::OpcBase
       include Knife::OpcOptions
@@ -83,7 +83,7 @@ class Chef
         end # end of if
       end # end of run
     end # end of create
-    
+
     class OpcObjectstorageList < Chef::Knife
       include Knife::OpcBase
       include Knife::OpcOptions
@@ -96,7 +96,7 @@ class Chef
          :long        => '--container CONTAINER',
          :description => 'storage container name'
 
-      def run
+      def run # rubocop:disable Metrics/AbcSize
         validate!
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)

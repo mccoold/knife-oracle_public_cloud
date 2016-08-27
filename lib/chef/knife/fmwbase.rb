@@ -8,13 +8,15 @@ class Chef
           'ssh-user'        => config[:ssh_user],
           'identity file'   => config[:identity_file],
           'chef node name'  => config[:chef_node_name]
-          
+
         }
         @validate = Validator.new
         @validate.attrvalidate(config, attrcheck)
         create_json = File.read(config[:create_json])
         create_data = JSON.parse(create_json)
         paas_create = InstCreate.new(config[:id_domain], config[:user_name], config[:passwd], service)
+        config[:paas_rest_endpoint] = paas_url(config[:paas_rest_endpoint], service) if config[:paas_rest_endpoint]
+        paas_create.url = config[:paas_rest_endpoint] if config[:paas_rest_endpoint]
         createcall = paas_create.create(create_data)
         if createcall.code == '401' || createcall.code == '404' || createcall.code == '400'
           print ui.color('Error with REST call, returned http code: ' + createcall.code + ' ', :red, :bold)
@@ -28,16 +30,18 @@ class Chef
           breakout = 1
           while status_message_status['status'] == 'In Progress' || status_message_status['status'] == 'Provisioning completed'
             print ui.color('.', :green)
+            abort('Error in provisioning process' + status_message_status) if status_message_status['status'] == 'failed'
             sleep 90
             status_object = paas_create.create_status(createcall['location'])
             status_message =  status_object.body
             status_message_status = JSON.parse(status_message) if status_object.code == '202' || status_object.code == '200'
             if status_object.code == '500'
-              breakkout+=
+              breakkout +=
               abort('Rest calls failing 5 times ' + status_object.code) if breakout == 5
             end # end of if
           end # end of while
           result = SrvList.new(config[:id_domain], config[:user_name], config[:passwd], service)
+          result.url = config[:paas_rest_endpoint] if config[:paas_rest_endpoint]
           result = result.inst_list(status_message_status['service_name'])
           result = JSON.parse(result.body)
           ssh_host = result['content_url']
@@ -49,6 +53,8 @@ class Chef
 
       def fmw_delete(data_hash, service) # rubocop:disable Metrics/AbcSize
         deleteinst = InstDelete.new(config[:id_domain], config[:user_name], config[:passwd], service)
+        config[:paas_rest_endpoint] = paas_url(config[:paas_rest_endpoint], service) if config[:paas_rest_endpoint]
+        deleteinst.url = config[:paas_rest_endpoint] if config[:paas_rest_endpoint]
         deleteinst = deleteinst.delete(data_hash, config[:inst])
         deleteinst = JSON.parse(deleteinst.body)
         deleteinst = JSON.pretty_generate(deleteinst)

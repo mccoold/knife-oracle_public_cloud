@@ -28,16 +28,22 @@ class Chef
       end # end of deps
       banner 'knife opc compute instance list (options)'
       option :rest_endpoint,
-         :short       => '-R',
-         :long        => '--rest_endpoint REST_ENDPOINT',
-         :description => 'Rest end point for compute',
-         :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_rest_endpoint] = key }
+        :short       => '-R',
+        :long        => '--rest_endpoint REST_ENDPOINT',
+        :description => 'Rest end point for compute',
+        :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_rest_endpoint] = key }
+      option :container,
+       :long        => '--container CONTAINER',
+       :description => 'container name for OPC IaaS Compute'
 
       def run # rubocop:disable Metrics/AbcSize
+        # check and load values from knife.rb
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)
         config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
+        config[:function]= 'instance'
         compute = ComputeClient.new
+        #loading and setting objects needed for the computeclient object
         compute.util = Utilities.new
         compute.validate =  Validator.new
         compute.options = config
@@ -60,11 +66,17 @@ class Chef
          :long        => '--rest_endpoint REST_ENDPOINT',
          :description => 'Rest end point for compute',
          :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_rest_endpoint] = key }
+         
+      option :container,
+       :long        => '--container CONTAINER',
+       :description => 'container name for OPC IaaS Compute'
 
       def run # rubocop:disable Metrics/AbcSize
+        # check and load values from knife.rb
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)
         config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
+        config[:function] = 'instance'
         compute = ComputeClient.new
         compute.options = config
         compute.validate =  Validator.new
@@ -92,6 +104,7 @@ class Chef
          :description => 'container name for OPC IaaS Compute'
 
       def run # rubocop:disable Metrics/AbcSize
+        # check and load values from knife.rb
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)
         config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
@@ -104,6 +117,7 @@ class Chef
         compute = ComputeClient.new
         compute.validate = @validate
         compute.util = Utilities.new
+        config[:function] = 'instance'
         compute.options = config
         instance = compute.image_list
         print ui.color(instance, :green)
@@ -129,6 +143,7 @@ class Chef
         :description => 'container name for OPC IaaS Compute'
 
       def run # rubocop:disable Metrics/AbcSize
+        # check and load values from knife.rb
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)
         config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
@@ -163,6 +178,7 @@ class Chef
         :description => 'imagelist name for snapshot'
 
       def run # rubocop:disable Metrics/AbcSize
+        # check and load values from knife.rb
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)
         config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)
@@ -194,6 +210,7 @@ class Chef
         :description => 'container name for OPC IaaS Compute'
 
       def run # rubocop:disable Metrics/AbcSize
+        # check and load values from knife.rb
         config[:id_domain] = locate_config_value(:opc_id_domain)
         config[:user_name] = locate_config_value(:opc_username)
         config[:rest_endpoint] = locate_config_value(:opc_rest_endpoint)

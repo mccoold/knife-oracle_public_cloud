@@ -16,6 +16,6 @@
 #
 module Knife
   module OPC
-    # Your code goes here...
+    
   end
 end
