@@ -20,15 +20,20 @@ class Chef
     require 'OPC'
     require 'opc_client'
     require 'chef/knife/base_options'
+
+    include Knife::OpcBase
+    include Knife::ChefBase
+
+    # lists the various components of the Nimbula network
     class OpcNetworkList < Chef::Knife
-      include Knife::OpcBase
+      include Knife::NimbulaOptions
       include Knife::OpcOptions
       require 'chef/knife/base_options'
       deps do
         require 'chef/json_compat'
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
-      end # end of deps
+      end
       banner 'knife opc network list (options)'
       option :rest_endpoint,
          :short       => '-R',
@@ -75,8 +80,8 @@ class Chef
         when 'ip_reservation', 'ip_association'
           iputilc = IPUtilClient.new
           iputilc.list(config)
-        end # end of case
-      end # end of run
-    end # end of network list
-  end # end of knife
-end # end of chef
+        end
+      end
+    end
+  end
+end

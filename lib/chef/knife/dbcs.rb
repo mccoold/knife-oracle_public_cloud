@@ -19,14 +19,19 @@ class Chef
     require 'chef/knife/base_options'
     require 'OPC'
     require 'opc_client'
+
+    include Knife::OpcBase
+    include Knife::ChefBase
+
+    # class to create opc dbcs, see example json folder for example create json files
     class OpcDbcsCreate < Chef::Knife
-      include Knife::OpcBase
+      include Knife::NimbulaOptions
       include Knife::OpcOptions
       deps do
         require 'chef/json_compat'
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
-      end # end of deps
+      end
       banner 'knife opc dbcs create (options)'
       option :create_json,
         :long        => '--create_json JSON',
@@ -83,14 +88,14 @@ class Chef
             if status_object.code == '500'
               breakkout +=
               abort('Rest calls failing 5 times ' + status_object.code) if breakout == 5
-            end # end of if
-          end # end of while
+            end 
+          end 
           # do a propersearch on the object now that its complete
-          result = SrvList.new(config[:id_domain], config[:user_name], config[:passwd], 'dbcs')
+          config[:function] = 'dbcs'
+          result = SrvList.new(config)
           result.url = config[:paas_rest_endpoint] if config[:paas_rest_endpoint]
           result = result.inst_list(status_message_status['service_name'])
           result = JSON.parse(result.body)
-          puts result
           # parse through some stuff to get the IP works with external only
           ssh_host = result['em_url']
           ssh_host.delete! 'https://'
@@ -100,16 +105,19 @@ class Chef
           node_attributes(ssh_host, 'PaaS DBCS')
           print ui.color('The IP is ' + ssh_host, :green)
           puts ''
-        end # end of if
-      end # end of run
-    end # end of create
+        end 
+      end 
+    end
 
+    # lists all DBCS instances, if called with action details it will give full output for that instance. 
+    # requires the full nimbula container name
     class OpcDbcsList < Chef::Knife
-      include Knife::OpcBase
+      include Knife::NimbulaOptions
       include Knife::OpcOptions
-      deps do
-        require 'chef/json_compat'
-      end # end of deps
+      require 'chef/json_compat'
+#      deps do
+#        require 'chef/json_compat'
+#      end
       banner 'knife opc dbcs list (options)'
       option :paas_rest_endpoint,
         :long         => '--paas_rest_endpoint PAASREST',
@@ -139,15 +147,16 @@ class Chef
         else
           print ui.color(JSON.pretty_generate(JSON.parse(result.body)), :green)
           puts ''
-        end # end of if
-      end # end of run
-    end # end of list
+        end
+      end
+    end
 
+    # deletes a single instance of DBCS
     class OpcDbcsDelete < Knife
       # These two are needed for the '--purge' deletion case
       require 'chef/node'
       require 'chef/api_client'
-      include Knife::OpcBase
+      include Knife::NimbulaOptions
       include Knife::OpcOptions
       banner 'knife opc dbcs delete (options)'
 
@@ -193,11 +202,11 @@ class Chef
         deleteinst = JSON.parse(deleteinst.body)
         JSON.pretty_generate(deleteinst)
         chef_delete
-      end # end of method run
+      end
 
       def query
         @query ||= Chef::Search::Query.new
-      end # end of query
-    end # end of delete
-  end # end of knife
-end # end of chef
+      end
+    end
+  end
+end

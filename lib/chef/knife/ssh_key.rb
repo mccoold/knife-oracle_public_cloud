@@ -21,15 +21,20 @@ class Chef
     require 'opc_client'
     require 'chef/node'
     require 'chef/knife/base_options'
+    
+    include Knife::OpcBase
+    include Knife::FmwBase
+    include Knife::OpcOptions
+    include Knife::NimbulaOptions
+    include Knife::ChefBase
 
-    deps do
-      require 'chef/json_compat'
-      require 'chef/knife/bootstrap'
-      Chef::Knife::Bootstrap.load_deps
-    end # end of deps
+    # adds public keys to Nimbula
     class OpcSshkeyUpdate < Chef::Knife
-      include Knife::OpcOptions
-      include Knife::OpcBase
+      deps do
+        require 'chef/json_compat'
+        require 'chef/knife/bootstrap'
+        Chef::Knife::Bootstrap.load_deps
+      end
       banner 'knife opc sshkey update (options)'
       option :create_json,
         :long        => '--create_json JSON',
@@ -62,12 +67,13 @@ class Chef
         sshkeyconfig = SshkeyClient.new
         print ui.color(sshkeyconfig.update(config), :green) if config[:action] == 'create'
         print ui.color(sshkeyconfig.update(config), :red) if config[:action] == 'delete'
-      end # end of run
-    end # end of update
+      end
+    end
 
     class OpcSshkeyList < Chef::Knife
       include Knife::OpcOptions
       include Knife::OpcBase
+      include Knife::NimbulaOptions
       require 'opc_client'
       banner 'knife opc sshkey list (options)'
 
@@ -94,7 +100,7 @@ class Chef
         config[:action] = 'list'
         sshkeyconfig = SshkeyClient.new
         print ui.color(sshkeyconfig.list(config), :green)
-      end # end of run
-    end # end of list
-  end # end of knife
-end # end of Chef
+      end
+    end
+  end
+end

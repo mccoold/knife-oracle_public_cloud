@@ -17,23 +17,8 @@ require 'chef/knife'
 class Chef
   class Knife
     module OpcOptions
-      require 'chef/knife'
       def self.included(includer) # rubocop:disable Metrics/AbcSize
         includer.class_eval do
-          option :user_name,
-             :short       => '-u',
-             :long        => '--user_name NAME',
-             :description => 'username for OPC account',
-             :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_username] = key }
-          option :id_domain,
-             :short       => '-i',
-             :long        => '--id_domain ID_DOMAIN',
-             :description => 'OPC id domain',
-             :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_id_domain] = key }
-          option :passwd,
-             :short       => '-p',
-             :long        => '--passwd PASS',
-             :description => 'password for OPC account'
           option :run_list,
             :short => '-r RUN_LIST',
             :long => '--run-list RUN_LIST',
@@ -85,7 +70,11 @@ class Chef
             :long        => "--bootstrap-wget-options OPTIONS",
             :description => "Add options to wget when installing chef-client",
             :proc        => Proc.new { |wo| Chef::Config[:knife][:bootstrap_wget_options] = wo }
-    
+          option :chef_node_name,
+            :short       => '-N NAME',
+            :long        => '--node-name NAME',
+            :description => 'The Chef node name for your new node',
+            :proc        => Proc.new { |key| Chef::Config[:knife][:chef_node_name] = key }
           option :bootstrap_curl_options,
             :long        => "--bootstrap-curl-options OPTIONS",
             :description => "Add options to curl when install chef-client",
@@ -104,8 +93,30 @@ class Chef
             :long        => "--[no-]node-verify-api-cert",
             :description => "Verify the SSL cert for HTTPS requests to the Chef server API.",
             :boolean => false
-        end # end of includer
-      end # end of included
+        end 
+      end 
+    end
+    
+    module NimbulaOptions
+      require 'chef/knife'
+      def self.included(includer) # rubocop:disable Metrics/AbcSize
+        includer.class_eval do
+          option :user_name,
+             :short       => '-u',
+             :long        => '--user_name NAME',
+             :description => 'username for OPC account',
+             :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_username] = key }
+          option :id_domain,
+             :short       => '-i',
+             :long        => '--id_domain ID_DOMAIN',
+             :description => 'OPC id domain',
+             :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_id_domain] = key }
+          option :passwd,
+             :short       => '-p',
+             :long        => '--passwd PASS',
+             :description => 'password for OPC account'
+        end
+      end
     end
   end
 end

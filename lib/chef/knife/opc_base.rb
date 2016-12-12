@@ -16,7 +16,7 @@
 require 'chef/knife'
 class Chef
   class Knife
-    module OpcBase
+    module ChefBase
       def locate_config_value(key)
         key = key.to_sym
         config[key] || Chef::Config[:knife][key]
@@ -31,7 +31,7 @@ class Chef
           end
         end
         exit 1 if errors.each { |e| ui.error(e) }.any?
-      end # end of validate!
+      end
 
       def bootstrap_for_linux_node(ssh_host) # rubocop:disable Metrics/AbcSize
         bootstrap = Chef::Knife::Bootstrap.new
@@ -44,15 +44,13 @@ class Chef
         bootstrap.config[:identity_file] = locate_config_value(:opc_ssh_identity_file)
         bootstrap.config[:chef_node_name] = locate_config_value(:chef_node_name)
         bootstrap.config[:use_sudo] = true unless config[:ssh_user] == 'root'
-        # puts 'in boot for linux'
         bootstrap_common_params(bootstrap)
-      end # end bootstrap
+      end
 
       def bootstrap_common_params(bootstrap) # rubocop:disable Metrics/AbcSize
         bootstrap.config[:run_list] = config[:run_list]
         bootstrap.config[:bootstrap_version] = locate_config_value(:bootstrap_version)
         bootstrap.config[:distro] = locate_config_value(:distro)
-        # setting bootstrap_template value to template_file for backward compatibility
         bootstrap.config[:template_file] = locate_config_value(:template_file) || locate_config_value(:bootstrap_template)
         bootstrap.config[:environment] = locate_config_value(:environment)
         bootstrap.config[:prerelease] = config[:prerelease]
@@ -79,7 +77,7 @@ class Chef
         Chef::Config[:knife][:hints] ||= {}
         Chef::Config[:knife][:hints]['opc'] ||= {}
         bootstrap
-      end # end of bootstap common
+      end
 
       def destroy_item(klass, name, type_name)
         begin
@@ -97,31 +95,42 @@ class Chef
             thing_to_delete = config[:chef_node_name]
           else
             thing_to_delete = config[:inst]
-          end # end of chef_node_name if
+          end
           destroy_item(Chef::Node, thing_to_delete, 'node')
           destroy_item(Chef::ApiClient, thing_to_delete, 'client')
         else
           ui.warn("Corresponding node and client for the #{config[:inst]} server were not deleted
           and remain registered with the Chef Server")
-        end # end of purge if
+        end
         rescue NoMethodError
           ui.error("Could not locate server #{config[:inst]}.  Please verify it was provisioned ")
-      end # end of chef delete
+      end
 
       def node_attributes(ssh_host, service)
         node = Chef::Node.load(config[:chef_node_name])
-        node.normal_attrs = { 'cloud' => { 'Note' => 'ignore this attribute, its wrong an Ohai bug' },
-                              'Cloud' => { 'provider' => 'Oracle Public Cloud', 'Service' => service,
+        node.normal_attrs = { 'Cloud' => { 'provider' => 'Oracle Public Cloud', 'Service' => service,
                                            'public_ips' => ssh_host, 'ID_DOMAIN' => config[:id_domain] } }
         node.save
       end
-
+    end
+    
+    module NgenBase
+      def ngen_auth
+        config[:compartment] = locate_config_value(:compartment)
+        config[:user] = locate_config_value(:bmc_user)
+        config[:fingerprint] = locate_config_value(:fingerprint)
+        config[:tenancy] = locate_config_value(:tenancy)
+        config[:key_file] = locate_config_value(:key_file)
+        config[:region] = locate_config_value(:bmc_region)
+      end
+    end
+    module OpcBase
       def paas_url(restendpoint, service) # rubocop:disable Metrics/AbcSize
         full_url = restendpoint + '/paas/service/jcs/api/v1.1/instances/' + config[:id_domain] if service == 'jcs'
         full_url = restendpoint + '/paas/service/dbcs/api/v1.1/instances/' + config[:id_domain] if service == 'dbcs'
         full_url = restendpoint + '/paas/service/soa/api/v1.1/instances/' + config[:id_domain] if service == 'soa'
         return full_url
       end
-    end # end of OpcBase
-  end # end of knife
-end # end of class chef
+    end
+  end
+end

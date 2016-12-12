@@ -28,7 +28,7 @@ and bootstrap them into chef with a single command.  The plug-in also creates st
 
  **Dependencies**
 
-     Ruby (1.8+), knife(chef 11.4+), OPC(0.3.2), oracle_public_cloud_client(0.4.0)
+     Ruby (1.8+), knife(chef 11.4+), OPC(0.4.0), oracle_public_cloud_client(0.5.0)
 
 
 ### Usage ###
@@ -56,6 +56,7 @@ and bootstrap them into chef with a single command.  The plug-in also creates st
 * knife opc soa create -u _username_ -i _identity_domain_ -p _password_ --create_json _JSON_file_ --identity-file _sshkeyfile_ -N _chefnodename_
 * knife opc soa delete -u _username_ -i _identity_domain_ -p _password_ -I _Instance Service Name_ -N _chefnodename_
 * knife opc soa list -u _username_ -i _identity_domain_ -p _password_ 
+* knife opc ngen instance -A (create, delete) -Y YAML file
 
 **Notes**
  * configuring Network can be done with orchestrations for accounts that have IaaS, for PaaS only accounts use the network command to define network rules.
@@ -64,11 +65,20 @@ and bootstrap them into chef with a single command.  The plug-in also creates st
 # Knife.rb Settings:
  Some flags to can be skipped from the command line if pre configured in the knife.rb file
 The following parameters can be set in the knife.rb file
-  * knife[:opc_id_domain] = '<value>'
-  * knife[:opc_username] = '<value>'
-  * knife[:opc_rest_endpoint] = '<value>'
-  * knife[:opc_ssh_identity_file] = "<value>"
-  * knife[:paas_rest_endpoint] = '<value>'
+
+       knife[:opc_id_domain] = '<value>'
+       knife[:opc_username] = '<value>'
+       knife[:opc_rest_endpoint] = '<value>'
+       knife[:opc_ssh_identity_file] = "<value>"
+       knife[:paas_rest_endpoint] = '<value>'
+       knife[:tenancy] = '<value>'
+       knife[:key_file] = '<value>'
+       knife[:bmc_debug] = false
+       knife[:bmc_user]= '<value>'
+       knife[:bmc_region] = 'us-phoenix-1'
+       knife[:pass_phrase] = '<value>'
+       knife[:compartment] = '<value>'
+
 
 
 # Defining your Chef runlist via JSON
@@ -97,6 +107,7 @@ _Requires 0.1.1 or above_
 ## Orchestrations##
 
 How to work with orchestrations with this plug-in
+
 * knife opc orchestration  -A  create :  This command adds the orchestration to OPC but does not do anything with Chef
 * knife opc orchestration -A delete  :  This command removes the orchestration from OPC but does not do anything with Chef 
 * knife opc orchestration -A start  : This command will start the orchestration, look for an launchplans in the orchestration, find all the described instances, grab the Chef information from user data and register all nodes during the start of the orchestration.
@@ -105,10 +116,12 @@ How to work with orchestrations with this plug-in
 
 ## Proxy Setup ##
 To enable proxy servers create a file in your home directory called opcclientcfg.conf In the file define two properties proxy_addr and proxy_port
-
-proxy_addr = 127.0.0.1
-
-proxy_port = 8888
+for details on the config file see the [configFile](https://github.com/mccoold/oracle_public_cloud_client/wiki/README)
+        
+        
+        proxy_addr = 127.0.0.1
+        proxy_port = 8888
+        
 ### Who do I talk to? ###
 
 * Repo Owner: Daryn McCool

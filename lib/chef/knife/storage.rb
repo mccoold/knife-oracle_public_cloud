@@ -17,13 +17,15 @@ class Chef
   class Knife
     require 'chef/knife/opc_base'
     require 'chef/knife/base_options'
+    require 'chef/json_compat'
+    require 'OPC'
+    
+    include Knife::OpcBase
+    include Knife::OpcOptions
+    include Knife::ChefBase
+    include Knife::NimbulaOptions
+    
     class OpcObjectstorageDelete < Chef::Knife
-      include Knife::OpcBase
-      include Knife::OpcOptions
-      deps do
-        require 'chef/json_compat'
-        require 'OPC'
-      end # end of deps
       banner 'knife opc objectstorage delete (options)'
       option :container,
          :long        => '--container CONTAINER',
@@ -47,18 +49,11 @@ class Chef
           print ui.color('ERROR this task could not be completed, the response code was ' + newcontainer.code, :red)
           puts ''
           puts newcontainer.body
-          # puts 'in else'
-        end # end of if
-      end # end of run
-    end # end of delete
+        end
+      end
+    end
 
     class OpcObjectstorageCreate < Chef::Knife
-      include Knife::OpcBase
-      include Knife::OpcOptions
-      deps do
-        require 'chef/json_compat'
-        require 'OPC'
-      end # end of deps
       banner 'knife opc objectstorage create (options)'
       option :container,
          :long        => '--container CONTAINER',
@@ -80,9 +75,9 @@ class Chef
           puts ''
         else
           puts newcontainer.body
-        end # end of if
-      end # end of run
-    end # end of create
+        end
+      end
+    end
 
     class OpcObjectstorageList < Chef::Knife
       include Knife::OpcBase
@@ -90,7 +85,7 @@ class Chef
       deps do
         require 'chef/json_compat'
         require 'OPC'
-      end # end of deps
+      end
       banner 'knife opc objectstorage list (options)'
       option :container,
          :long        => '--container CONTAINER',
@@ -112,9 +107,8 @@ class Chef
           puts ''
         else
           puts newcontainer.code
-          puts 'in else'
-        end # end of if
-      end # end of run
-    end # end of list
-  end # end of knife
-end # end of chef
+        end
+      end
+    end
+  end
+end

@@ -25,11 +25,11 @@ class Chef
               launchplan['tags'] = tags unless tags.nil?
               launchplan['ssh_user'] = ssh_user unless ssh_user.nil?
               instances.insert(-1, launchplan)
-            end # end of inside loop
-          end # end of if
-        end # end of outside loop
+            end
+          end
+        end
         instances
-      end # end of method
+      end
 
       def master_orch(config_data) # rubocop:disable Metrics/AbcSize
         orchestration_children = Array.new
@@ -45,10 +45,10 @@ class Chef
         end
         orchestration_children = 'null' if orchestration_children.nil? || orchestration_children.empty?
         orchestration_children
-      end # end of master
-    end # end of module
-  end # end of knife
-end # end of Chef
+      end
+    end
+  end
+end
 
 class Hash
   def dig(*path)

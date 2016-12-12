@@ -14,18 +14,20 @@
 # limitations under the License.
 #
 class Chef
-  require 'chef/knife/opc_base'
-  require 'OPC'
-  require 'chef/knife/base_options'
   class Knife
+    require 'chef/knife/opc_base'
+    require 'OPC'
+    require 'chef/knife/base_options'
+    include Knife::OpcBase
+    include Knife::ChefBase
     class OpcComputeInstanceList < Chef::Knife
       include Knife::OpcOptions
-      include Knife::OpcBase
+      include Knife::NimbulaOptions
       deps do
         require 'chef/json_compat'
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
-      end # end of deps
+      end
       banner 'knife opc compute instance list (options)'
       option :rest_endpoint,
         :short       => '-R',
@@ -34,7 +36,8 @@ class Chef
         :proc        =>  Proc.new { |key| Chef::Config[:knife][:opc_rest_endpoint] = key }
       option :container,
        :long        => '--container CONTAINER',
-       :description => 'container name for OPC IaaS Compute'
+       :description => 'container name for OPC IaaS Compute',
+       :proc        =>  Proc.new { |key| Chef::Config[:knife][:container] = key }
 
       def run # rubocop:disable Metrics/AbcSize
         # check and load values from knife.rb
@@ -48,17 +51,17 @@ class Chef
         compute.validate =  Validator.new
         compute.options = config
         print ui.color(compute.list, :green)
-      end # end of run
-    end # end of list class
+      end 
+    end 
 
     class OpcComputeInstanceDelete < Chef::Knife
-      include Knife::OpcBase
+      include Knife::NimbulaOptions
       include Knife::OpcOptions
       deps do
         require 'chef/json_compat'
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
-      end # end of deps
+      end 
       banner 'knife opc compute instance delete (options)'
 
       option :rest_endpoint,
@@ -82,12 +85,12 @@ class Chef
         compute.validate =  Validator.new
         compute.util = Utilities.new
         print ui.color(compute.delete, :red)
-      end # end of run
-    end # end of delete class
+      end 
+    end 
 
     class OpcComputeImagelistShow < Chef::Knife
       include Knife::OpcOptions
-      include Knife::OpcBase
+      include Knife::NimbulaOptions
       deps do
         require 'chef/json_compat'
         require 'chef/knife/bootstrap'
@@ -121,17 +124,17 @@ class Chef
         compute.options = config
         instance = compute.image_list
         print ui.color(instance, :green)
-      end # end of run
-    end # end of Imagelist class
+      end 
+    end 
 
     class OpcComputeInstanceSnapshotShow < Chef::Knife
       include Knife::OpcOptions
-      include Knife::OpcBase
+      include Knife::NimbulaOptions
       deps do
         require 'chef/json_compat'
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
-      end # end of deps
+      end 
       banner 'knife opc compute instance snapshot show (options)'
       option :rest_endpoint,
         :short       => '-R',
@@ -153,17 +156,17 @@ class Chef
         config[:function] = 'inst_snapshot'
         compute.options = config
         print ui.color(compute.list, :green)
-      end # end of run
-    end # end of list class
+      end 
+    end 
     
     class OpcComputeInstanceSnapshotCreate < Chef::Knife
       include Knife::OpcOptions
-      include Knife::OpcBase
+      include Knife::NimbulaOptions
       deps do
         require 'chef/json_compat'
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
-      end # end of deps
+      end
       banner 'knife opc compute instance snapshot create (options)'
       option :rest_endpoint,
         :short       => '-R',
@@ -188,12 +191,12 @@ class Chef
         config[:function] = 'inst_snapshot'
         compute.options = config
         print ui.color(compute.create_snap, :green)
-      end # end of run
-    end # end of snap create class
+      end 
+    end 
     
     class OpcComputeInstanceSnapshotDelete < Chef::Knife
       include Knife::OpcOptions
-      include Knife::OpcBase
+      include Knife::NimbulaOptions
       deps do
         require 'chef/json_compat'
         require 'chef/knife/bootstrap'
@@ -220,7 +223,7 @@ class Chef
         config[:function] = 'inst_snapshot'
         compute.options = config
         print ui.color(compute.delete, :red)
-      end # end of run
-    end # end of snap delete class
-  end # end of knife
-end # end of chef
+      end 
+    end 
+  end 
+end 

@@ -22,9 +22,13 @@ class Chef
       require 'opc_client'
       require 'chef/node'
       require 'chef/knife/base_options'
+
+      include Knife::ChefBase
       include Knife::OpcOptions
       include Knife::OpcBase
       include Knife::OrchJson
+      include Knife::NimbulaOptions
+
       deps do
         require 'chef/json_compat'
         require 'chef/knife/bootstrap'
@@ -46,7 +50,8 @@ class Chef
          :description => 'action options list or details, create, stop, start'
       option :container,
          :long        => '--container CONTAINER',
-         :description => 'container name for OPC IaaS Compute'
+         :description => 'container name for OPC IaaS Compute',
+         :proc        =>  Proc.new { |key| Chef::Config[:knife][:container] = key }
       option :track,
          :long        => '--track',
          :description => 'tracks the install',
@@ -89,7 +94,7 @@ class Chef
         @orch = OrchClient.new
         # populate setter methods needed
         @orch.options = config
-        @orch.orch = Orchestration.new(config[:id_domain], config[:user_name], config[:passwd], config[:rest_endpoint])
+        @orch.orch = Orchestration.new(config)
         @orch.util = Utilities.new
         case config[:action]
         when 'list', 'details'
@@ -114,18 +119,24 @@ class Chef
           if master_orchcall == 'null'
             # @parent maintains the top orchestration in the event of nested orchestrations
             @parent = config[:container]
+            # handles to building and destroying of the node on the Chef server if there is no master orch
             chef_instance_build(yuuup)
+            #chef_instance_build(@orch.list)
           else
             @parent = config[:container]
+            # handles to building and destroying of the node on the Chef server if there is nested orch
+            # it parses through all the oplans looking for launch plans and the instances
+            # chef bootstrap runs serially
             master_orchcall.each do |orchlist|
               config[:container] = orchlist
               @orch.options = config
               chef_instance_build(@orch.list)
-            end # end of loop
-          end # end of if
-        end # end of case
-      end # end of run
+            end
+          end
+        end
+      end
 
+      # sets values for the node in Chef and values to be read during the Chef bootstrap
       def chef_node_configuration(instance) # rubocop:disable Metrics/AbcSize
         Chef::Config[:knife][:environment] = instance['chefenvironment'] unless instance['chefenvironment'].nil?
         config[:environment] = Chef::Config[:knife][:environment] unless instance['chefenvironment'].nil?
@@ -136,11 +147,11 @@ class Chef
         config[:ssh_user] = instance['ssh_user'] unless instance['ssh_user'].nil?
       end
 
+      #  populates some custom ohai values
       def node_update(ssh_host, private_ip) # rubocop:disable Metrics/AbcSize
         node = Chef::Node.load(config[:chef_node_name]) unless config[:action] == 'stop'
         node.chef_environment = Chef::Config[:knife][:environment] unless config[:action] == 'stop'
-        node.normal_attrs = { 'cloud' => { 'Note' => 'this attribute is not used for the oracle cloud' },
-                              'Cloud' => { 'provider' => 'Oracle Public Cloud', 'Service' => 'Compute',
+        node.normal_attrs = { 'Cloud' => { 'provider' => 'Oracle Public Cloud', 'Service' => 'Compute',
                                            'public_ips' => ssh_host, 'private_ips' => private_ip,
                                            'ID_DOMAIN' => config[:id_domain] } }  unless config[:action] == 'stop'
         config[:tags].each do |tag|
@@ -149,11 +160,11 @@ class Chef
         node.save unless config[:action] == 'stop'
       end
 
+      # builds or destroys the instance in chef
+      # pulling the instance data from the launch plan section of the orchestration
       def chef_instance_build(orchestration) # rubocop:disable Metrics/AbcSize
-        # builds or destroys the instance in chef
-        # pulling the instance data from the launch plan section of the orchestration
         instance_data = orch_json_parse(orchestration)
-        instanceconfig = Instance.new(config[:id_domain], config[:user_name], config[:passwd], config[:rest_endpoint])
+        instanceconfig = Instance.new(config)
         # iterate through all of the instnaces listed in the launch plan in case there is more than one
         instance_data.each do |instance|
           instance_IP = instanceconfig.list_ip(instance['name'])
@@ -174,6 +185,6 @@ class Chef
         @orch.options = config if config[:action] == 'stop'
         print ui.color(@orch.manage, :yellow) if config[:action] == 'stop'
       end
-    end # end of orch
-  end # end of knife
-end # end of chef
+    end
+  end
+end

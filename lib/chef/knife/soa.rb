@@ -19,15 +19,21 @@ class Chef
     require 'chef/knife/fmwbase'
     require 'chef/knife/base_options'
     require 'OPC'
+
+    include Knife::ChefBase
+    include Knife::OpcBase
+    include Knife::FmwBase
+    include Knife::OpcOptions
+    include Knife::NimbulaOptions
+
+    # create calls for SOA
     class OpcSoaCreate < Chef::Knife
-      include Knife::OpcBase
-      include Knife::FmwBase
-      include Knife::OpcOptions
+      
       deps do
         require 'chef/json_compat'
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
-      end # end of deps
+      end
 
       banner 'knife opc soa create (options)'
 
@@ -54,12 +60,10 @@ class Chef
         config[:identity_file] = locate_config_value(:opc_ssh_identity_file)
         config[:paas_rest_endpoint] = locate_config_value(:paas_rest_endpoint)
         fmw_create(config, 'soa')
-      end # end of run
-    end # end of create
+      end
+    end
 
-class OpcSoaList < Chef::Knife
-      include Knife::OpcBase
-      include Knife::OpcOptions
+  class OpcSoaList < Chef::Knife
       deps do
         require 'chef/json_compat'
         require 'OPC'
@@ -72,7 +76,7 @@ class OpcSoaList < Chef::Knife
       option :paas_rest_endpoint,
         :long         => '--paas_rest_endpoint PAASREST',
         :description  => 'REST end point for PaaS services not in the US'
-
+  
       def run # rubocop:disable Metrics/AbcSize
         validate!
         # loading values from knife.rb
@@ -95,19 +99,16 @@ class OpcSoaList < Chef::Knife
         else
           print ui.color(JSON.pretty_generate(JSON.parse(result.body)), :green)
           puts ''
-        end # end of if
-      end # end of run
-    end # end of list
+        end
+      end
+    end
 
     class OpcSoaDelete < Chef::Knife
-      include Knife::OpcBase
-      include Knife::FmwBase
-      include Knife::OpcOptions
       deps do
         require 'chef/json_compat'
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
-      end # end of deps
+      end
 
       banner 'knife opc soa delete (options)'
 
@@ -163,7 +164,7 @@ class OpcSoaList < Chef::Knife
         puts data_hash
         puts config[:inst]
         fmw_delete(data_hash, 'soa')
-      end # end of run
-    end # end of delete
-  end # end of knife
-end # end of chef
+      end
+    end
+  end
+end

@@ -1,4 +1,4 @@
- # Author:: Daryn McCool (<mdaryn@hotmail.com>)
+# Author:: Daryn McCool (<mdaryn@hotmail.com>)
 # License:: Apache License, Version 2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,15 +19,20 @@ class Chef
     require 'chef/knife/fmwbase'
     require 'chef/knife/base_options'
     require 'OPC'
+
+    include Knife::OpcBase
+    include Knife::ChefBase
+
+    # create java cloud server instances
     class OpcJcsCreate < Chef::Knife
-      include Knife::OpcBase
+      include Knife::NimbulaOptions
       include Knife::FmwBase
       include Knife::OpcOptions
       deps do
         require 'chef/json_compat'
         require 'chef/knife/bootstrap'
         Chef::Knife::Bootstrap.load_deps
-      end # end of deps
+      end
 
       banner 'knife opc jcs create (options)'
       option :create_json,
@@ -52,16 +57,17 @@ class Chef
         config[:identity_file] = locate_config_value(:opc_ssh_identity_file)
         config[:paas_rest_endpoint] = locate_config_value(:paas_rest_endpoint)
         fmw_create(config, 'jcs')
-      end # end of run
-    end # end of create
+      end
+    end
 
+    # Lists all instances of java cloud service
     class OpcJcsList < Chef::Knife
-      include Knife::OpcBase
+      include Knife::NimbulaOptions
       include Knife::OpcOptions
       deps do
         require 'chef/json_compat'
         require 'OPC'
-      end # end of deps
+      end
       banner 'knife opc jcs list (options)'
       option :inst,
         :short        => '-I INST',
@@ -83,25 +89,24 @@ class Chef
         @validate.attrvalidate(config, attrcheck)
         # for values passed in for PaaS REST end point
         config[:paas_rest_endpoint] = paas_url(config[:paas_rest_endpoint], 'jcs') if config[:paas_rest_endpoint]
-        result = SrvList.new(config[:id_domain], config[:user_name], config[:passwd], 'jcs')
+        config[:function] = 'jcs'
+        result = SrvList.new(config)
         result.url = config[:paas_rest_endpoint] if config[:paas_rest_endpoint]
         result = result.service_list unless config[:inst]
         result = result.inst_list(config[:inst]) if config[:inst]
-        if result.code == '401' || result.code == '400' || result.code == '404' || result.code == '500'
-          print ui.color('Error with REST call, returned http code: ' + result.code + ' ', :red, :bold)
-          print ui.color(result.body, :red)
-        else
-          print ui.color(JSON.pretty_generate(JSON.parse(result.body)), :green)
-          puts ''
-        end # end of if
-      end # end of run
-    end # end of list
+        responsehandle = Utilities.new
+        responsehandle.response_handler(result)
+        print ui.color(JSON.pretty_generate(JSON.parse(result.body)), :green)
+        puts ''
+      end 
+    end
 
+    # deletes java cloud service instances
     class OpcJcsDelete < Knife
       # These two are needed for the '--purge' deletion case
       require 'chef/node'
       require 'chef/api_client'
-      include Knife::OpcBase
+      include Knife::NimbulaOptions
       include Knife::FmwBase
       include Knife::OpcOptions
       banner 'knife opc jcs delete (options)'
@@ -159,11 +164,11 @@ class Chef
         data_hash = { 'dbaName' => config[:dbaname], 'dbaPassword' => config[:dbapass], 'forceDelete' => config[:forcedelete] }
         data_hash.to_json
         fmw_delete(data_hash, 'jcs')
-      end # end of method run
+      end
 
       def query
         @query ||= Chef::Search::Query.new
-      end # end of query
-    end # end of delete
-  end # end of knife
-end # end of chef
+      end
+    end
+  end
+end
