@@ -137,15 +137,15 @@ class Chef
       end
 
       # sets values for the node in Chef and values to be read during the Chef bootstrap
-      def chef_node_configuration(instance) # rubocop:disable Metrics/AbcSize
-        Chef::Config[:knife][:environment] = instance['chefenvironment'] unless instance['chefenvironment'].nil?
-        config[:environment] = Chef::Config[:knife][:environment] unless instance['chefenvironment'].nil?
-        Chef::Config[:knife][:chef_node_name] = instance['label']
-        config[:chef_node_name] = instance['label']
-        config[:run_list] = instance['runlist'] unless  instance['runlist'].nil?
-        config[:tags] = instance['tags'] unless instance['tags'].nil?
-        config[:ssh_user] = instance['ssh_user'] unless instance['ssh_user'].nil?
-      end
+#      def chef_node_configuration(instance) # rubocop:disable Metrics/AbcSize
+#        Chef::Config[:knife][:environment] = instance['environment'] unless instance['environment'].nil?
+#        config[:environment] = Chef::Config[:knife][:environment] unless instance['environment'].nil?
+#        Chef::Config[:knife][:chef_node_name] = instance['label']
+#        config[:chef_node_name] = instance['label']
+#        config[:run_list] = instance['runlist'] unless  instance['runlist'].nil?
+#        config[:tags] = instance['tags'] unless instance['tags'].nil?
+#        config[:ssh_user] = instance['ssh_user'] unless instance['ssh_user'].nil?
+#      end
 
       #  populates some custom ohai values
       def node_update(ssh_host, private_ip) # rubocop:disable Metrics/AbcSize

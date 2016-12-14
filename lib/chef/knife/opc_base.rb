@@ -17,11 +17,23 @@ require 'chef/knife'
 class Chef
   class Knife
     module ChefBase
+      # used to pull values from the knife.rb
       def locate_config_value(key)
         key = key.to_sym
         config[key] || Chef::Config[:knife][key]
       end
 
+      
+      def chef_node_configuration(instance) # rubocop:disable Metrics/AbcSize
+        Chef::Config[:knife][:environment] = instance['environment'] unless instance['environment'].nil?
+        config[:environment] = instance['environment'] unless instance['environment'].nil?
+        Chef::Config[:knife][:chef_node_name] = instance['label'] unless instance['label'].nil?
+        config[:chef_node_name] = instance['label'] unless instance['label'].nil?
+        config[:run_list] = instance['run_list'] unless  instance['run_list'].nil?
+        config[:tags] = instance['tags'] unless instance['tags'].nil?
+        config[:ssh_user] = instance['ssh_user'] unless instance['ssh_user'].nil?
+      end
+        
       def validate!(keys = [:opc_id_domain, :opc_username])
         errors = []
         keys.each do |k|
@@ -33,6 +45,7 @@ class Chef
         exit 1 if errors.each { |e| ui.error(e) }.any?
       end
 
+      # bootstrap method to boot linux nodes leverages the config object for values
       def bootstrap_for_linux_node(ssh_host) # rubocop:disable Metrics/AbcSize
         bootstrap = Chef::Knife::Bootstrap.new
         bootstrap.name_args = ssh_host
@@ -79,6 +92,7 @@ class Chef
         bootstrap
       end
 
+      # removes nodes from the Chef Server for paas calls
       def destroy_item(klass, name, type_name)
         begin
           object = klass.load(name)
@@ -89,6 +103,7 @@ class Chef
         end
       end
 
+      # deletes nodes from Chef Server, newer method
       def chef_delete # rubocop:disable Metrics/AbcSize
         if config[:purge]
           if config[:chef_node_name]
@@ -106,15 +121,23 @@ class Chef
           ui.error("Could not locate server #{config[:inst]}.  Please verify it was provisioned ")
       end
 
+      # updates ohai attributes with oracle cloud specific values
       def node_attributes(ssh_host, service)
         node = Chef::Node.load(config[:chef_node_name])
+        node.chef_environment = Chef::Config[:knife][:environment]
         node.normal_attrs = { 'Cloud' => { 'provider' => 'Oracle Public Cloud', 'Service' => service,
                                            'public_ips' => ssh_host, 'ID_DOMAIN' => config[:id_domain] } }
         node.save
+        config[:tags].each do |tag|
+          node.tags << tag
+        end
+        node.save unless config[:action] == 'stop'
       end
     end
-    
+
+    # base module for methods specific to Next Gen / BMC
     module NgenBase
+      # authentication for next gen cloud
       def ngen_auth
         config[:compartment] = locate_config_value(:compartment)
         config[:user] = locate_config_value(:bmc_user)
@@ -122,9 +145,25 @@ class Chef
         config[:tenancy] = locate_config_value(:tenancy)
         config[:key_file] = locate_config_value(:key_file)
         config[:region] = locate_config_value(:bmc_region)
+        config[:verify_certs] = locate_config_value(:verify_certs)
+      end
+      
+      # nice screen display while you wait :)
+      def ho_hum
+        i = 0
+        num = 15
+        while i < num  do
+          print ui.color('.', :green)
+         sleep 15
+         i +=1
+        end
       end
     end
+    
+    # module for Nimbula methods
     module OpcBase
+
+      # defines PaaS URL's based on service
       def paas_url(restendpoint, service) # rubocop:disable Metrics/AbcSize
         full_url = restendpoint + '/paas/service/jcs/api/v1.1/instances/' + config[:id_domain] if service == 'jcs'
         full_url = restendpoint + '/paas/service/dbcs/api/v1.1/instances/' + config[:id_domain] if service == 'dbcs'

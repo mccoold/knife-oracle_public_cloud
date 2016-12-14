@@ -20,8 +20,8 @@ class Chef
               tags = inst.dig('attributes', 'userdata', 'chef', 'tags')
               ssh_user = inst.dig('attributes', 'userdata', 'chef', 'ssh_user')
               launchplan = { 'label' => label, 'name' => name }
-              launchplan['runlist'] = chefrunlist unless chefrunlist.nil?
-              launchplan['chefenvironment'] = chefenvironment unless chefenvironment.nil?
+              launchplan['run_list'] = chefrunlist unless chefrunlist.nil?
+              launchplan['environment'] = chefenvironment unless chefenvironment.nil?
               launchplan['tags'] = tags unless tags.nil?
               launchplan['ssh_user'] = ssh_user unless ssh_user.nil?
               instances.insert(-1, launchplan)
@@ -31,6 +31,8 @@ class Chef
         instances
       end
 
+      # Method used to determine if the orchestration is the parent in a nested orchestration
+      # returns boolean value null or not null
       def master_orch(config_data) # rubocop:disable Metrics/AbcSize
         orchestration_children = Array.new
         json_data = JSON.parse(config_data)
