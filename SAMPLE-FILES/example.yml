@@ -1,0 +1,136 @@
+--- 
+compute: 
+  - 
+    instances: 
+      - 
+        server: 
+          ad: "ACfH:PHX-AD-1"
+          attachments: 
+            - 
+              volume: <storage volume name>
+          compartment: <Compartment name>
+          display_name: <storage display_name>
+          image: Oracle-Linux-7.3-2016.12.08-0
+          shape: BM.Standard1.36
+          ssh-key: "ssh pub key"
+          subnet: "ACfH:PHX-AD-1"
+          userdata: 
+            - 
+              chef: 
+                environment: demo
+                run_list: 
+                  - chef-client
+                tags:
+                - tag1
+                - testtag
+          vcn: <VCN name>
+      -
+        server: 
+          ad: "ACfH:PHX-AD-1"
+          compartment: <Compartment name>
+          display_name: daryn802
+          image: Oracle-Linux-7.3-2016.12.08-0
+          shape: BM.Standard1.36
+          ssh-key: "ssh pub key"
+          subnet: "ACfH:PHX-AD-1"
+          userdata: 
+            - 
+              chef: 
+                environment: demo
+                run_list: 
+                  - chef-client
+                  - role1
+                tags:
+                - tag2
+                - testtag2
+          vcn: <VCN name>
+    storage: 
+      - 
+        volume: 
+          ad: "ACfH:PHX-AD-1"
+          compartment: <Compartment name>
+          display_name: <storage volume name>
+network: 
+  - 
+    dhcp_options: 
+      - 
+        dhcp_option: 
+          compartment: <Compartment name>
+          display_name: <DHCP name>
+    internet_gateways: 
+      - 
+        internet_gateway: 
+          compartment: <Compartment name>
+          display_name: <Internet GW name>
+          enabled: true
+          vcn: <VCN name>
+    route_tables: 
+      - 
+        route_table: 
+          compartment: <Compartment name>
+          display_name: <route_table name>
+          internet_gateway: <Internet GW name>
+          route_rules: 
+            - 
+              route_rule: 
+                cidr_block: 0.0.0.0/0
+          vcn: <VCN name>
+    security_lists: 
+      - 
+        security_list: 
+          compartment: <Compartment name>
+          display_name: default
+          egress_rules: 
+            - 
+              rule: 
+                destination: 0.0.0.0/0
+                protocol: 6
+          ingress_rules: 
+            - 
+              rule: 
+                max_port: 3000
+                min_port: 3000
+                protocol: 6
+                source: 0.0.0.0/0
+            - 
+              rule: 
+                max_port: 22
+                min_port: 22
+                protocol: 6
+                source: 0.0.0.0/0
+          vcn: <VCN name>
+    subnets: 
+      - 
+        subnet: 
+          ad: "ACfH:PHX-AD-2"
+          cidr_block: 10.0.1.0/24
+          compartment: <Compartment name>
+          display_name: "ACfH:PHX-AD-2"
+          route_table: <route_table name>
+          security_list: default
+          vcn: <VCN name>
+      - 
+        subnet: 
+          ad: "ACfH:PHX-AD-3"
+          cidr_block: 10.0.2.0/24
+          compartment: <Compartment name>
+          display_name: "ACfH:PHX-AD-3"
+          route_table: <route_table name>
+          security_list: default
+          vcn: <VCN name>
+      - 
+        subnet: 
+          ad: "ACfH:PHX-AD-1"
+          cidr_block: 10.0.0.0/24
+          compartment: <Compartment name>
+          display_name: "ACfH:PHX-AD-1"
+          route_table: <route_table name>
+          security_list: default
+          vcn: <VCN name>
+    vcns: 
+      - 
+        vcn: 
+          cidr_block: 10.0.0.0/16
+          compartment: <Compartment name>
+          display_name: <VCN name>
+          enabled: true
